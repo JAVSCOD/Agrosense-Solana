@@ -1,64 +1,66 @@
-import * as anchor from "@project-serum/anchor";
-import { Connection, clusterApiUrl, Keypair } from "@solana/web3.js";
-import fs from "fs";
+// import * as anchor from "@project-serum/anchor";
+// import { Connection, clusterApiUrl, Keypair } from "@solana/web3.js";
+// import fs from "fs";
 
-// 🌐 Conexión a devnet
-const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
+// const idl = JSON.parse(
+//   fs.readFileSync(new URL("../idl/agrosense.json", import.meta.url))
+// );
 
-// 🔑 Cargar wallet (la misma de Anchor)
-const secretKey = JSON.parse(
-  fs.readFileSync("/home/javs/.config/solana/id.json")
-);
+// 🌐 Conexión
+// const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
 
-const wallet = Keypair.fromSecretKey(new Uint8Array(secretKey));
+// 🔑 Wallet
+// const secretKey = JSON.parse(
+//   fs.readFileSync("/home/javs/.config/solana/id.json")
+// );
 
-// Provider
-const provider = new anchor.AnchorProvider(
-  connection,
-  new anchor.Wallet(wallet),
-  { preflightCommitment: "confirmed" }
-);
+// const wallet = Keypair.fromSecretKey(new Uint8Array(secretKey));
 
-anchor.setProvider(provider);
+// 🔌 Provider
+// const provider = new anchor.AnchorProvider(
+//   connection,
+//   new anchor.Wallet(wallet),
+//   { preflightCommitment: "confirmed" }
+// );
 
-// ⚠️ AQUÍ VAS A PONER TU PROGRAM ID REAL
-const programId = new anchor.web3.PublicKey("TU_PROGRAM_ID");
+// anchor.setProvider(provider);
 
-// ⚠️ NECESITAMOS EL IDL (después del build)
-const idl = {}; // ← lo llenamos después
+// 🔥 Program ID
+// const programId = new anchor.web3.PublicKey(
+//   "BPWdnHj2JWkxWHmQ3tJssMx9qPGN3YytY9KrUyUd1u8p"
+// );
 
-let program;
+// 🔥 Programa listo
+// const program = new anchor.Program(idl, programId, provider);
 
-// Inicializar programa (cuando tengamos IDL)
-export function initProgram(idlJson) {
-  program = new anchor.Program(idlJson, programId, provider);
-}
-
-// 🚀 Enviar datos al contrato
-export async function enviarASolana(data) {
+// 🚀 Enviar datos (MODO PRUEBA)
+export async function enviarASolana(evento) {
   try {
-    if (!program) {
-      console.log("⚠️ Programa no inicializado");
-      return;
-    }
+    // 🧪 Solo simulamos envío
+    console.log("🧪 Simulación → datos que se enviarían a Solana:", evento);
 
+    // 🔒 TODO ESTO SE ACTIVA DESPUÉS
+    /*
     const sensorAccount = anchor.web3.Keypair.generate();
-    const registro = anchor.web3.Keypair.generate();
+
+    const humedad = evento.humedad || 0;
+    const temperatura = evento.tipo === "activar_riego" ? 1 : 0;
 
     await program.methods
-      .addData(data.humedad, data.temperatura)
+      .addData(humedad, temperatura)
       .accounts({
         sensorAccount: sensorAccount.publicKey,
-        registro: registro.publicKey,
         user: wallet.publicKey,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
-      .signers([sensorAccount, registro])
+      .signers([sensorAccount])
       .rpc();
 
-    console.log("✅ Datos enviados a Solana");
+    console.log("🔗 Evento enviado a Solana:", evento.tipo);
+    */
+
   } catch (error) {
-    console.error("❌ Error enviando a Solana:", error);
+    console.error("❌ Error simulando envío a Solana:", error);
   }
 }
 
