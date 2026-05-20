@@ -1,32 +1,51 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
 
 export default function ProtectedRoute({ children }) {
-  const { user, loading } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.replace("/login"); // 🔥 mejor que push
-    }
-  }, [user, loading, router]);
+  const [loading, setLoading] = useState(true);
+  const [web3User, setWeb3User] = useState(null);
 
-  // ⏳ Mientras valida sesión
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+
+    if (!storedUser) {
+      router.replace("/login");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const parsedUser = JSON.parse(storedUser);
+
+      if (!parsedUser.wallet || !parsedUser.pda) {
+        router.replace("/login");
+        setLoading(false);
+        return;
+      }
+
+      setWeb3User(parsedUser);
+    } catch (error) {
+      localStorage.removeItem("user");
+      router.replace("/login");
+    } finally {
+      setLoading(false);
+    }
+  }, [router]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <p>Cargando sesión...</p>
+        <p>Cargando sesión Web3...</p>
       </div>
     );
   }
 
-  // 🚫 Mientras redirige
-  if (!user) return null;
+  if (!web3User) return null;
 
-  // ✅ Usuario autenticado
   return <>{children}</>;
 }
 

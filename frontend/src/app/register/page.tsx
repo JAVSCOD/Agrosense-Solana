@@ -2,6 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { SystemProgram } from "@solana/web3.js";
+
+import {
+  getProgram,
+  getUserAccountPDA,
+  checkProgramExists,
+} from "@/lib/solana";
 
 type FormType = {
   nombres: string;
@@ -15,6 +23,8 @@ type FormType = {
 
 export default function Register() {
   const router = useRouter();
+  const wallet = useWallet();
+  const { publicKey, connected, connect } = wallet;
 
   const [form, setForm] = useState<FormType>({
     nombres: "",
@@ -27,11 +37,27 @@ export default function Register() {
   });
 
   const [errors, setErrors] = useState<Partial<FormType>>({});
+  const [globalError, setGlobalError] = useState("");
+  const [globalSuccess, setGlobalSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const [step, setStep] = useState<"form" | "verify">("form");
   const [codigo, setCodigo] = useState("");
-  const [globalError, setGlobalError] = useState("");
 
-  // 🔍 VALIDACIONES
+  const [userAccountPda, setUserAccountPda] = useState("");
+  const [txSignature, setTxSignature] = useState("");
+
+  const hashText = async (text: string) => {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(text.trim().toLowerCase());
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+
+    return hashArray
+      .map((byte) => byte.toString(16).padStart(2, "0"))
+      .join("");
+  };
+
   const validate = (name: keyof FormType, value: string) => {
     let error = "";
 
@@ -77,7 +103,6 @@ export default function Register() {
     return error;
   };
 
-  // ✏️ INPUT CHANGE
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
@@ -89,7 +114,6 @@ export default function Register() {
     validate(name as keyof FormType, value);
   };
 
-  // 🚀 VALIDAR TODO
   const validateAll = () => {
     let newErrors: Partial<FormType> = {};
 
@@ -107,14 +131,15 @@ export default function Register() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // 📧 ENVIAR CÓDIGO
   const enviarCodigo = async () => {
-    setGlobalError("");
-
-    if (!validateAll()) return;
-
     try {
-      const res = await fetch("http://localhost:3001/api/auth/register", {
+      setGlobalError("");
+      setGlobalSuccess("");
+      setLoading(true);
+
+      if (!validateAll()) return;
+
+      const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -124,73 +149,174 @@ export default function Register() {
 
       const data = await res.json();
 
-      if (data.ok) {
-        setStep("verify");
-      } else {
-        setGlobalError(data.error);
+      if (!data.ok) {
+        setGlobalError(data.error || "Error enviando código");
+        return;
       }
-    } catch (error) {
+
+      setStep("verify");
+      setGlobalSuccess("Código enviado. Revisa tu correo.");
+    } catch (error: any) {
       console.error(error);
       setGlobalError("Error conectando con el servidor");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // 🔐 VERIFICAR CÓDIGO
-const verificarCodigo = async () => {
-  try {
-    const res = await fetch("http://localhost:3001/api/auth/verify", {
+  const registrarUsuarioSolana = async () => {
+    if (!connected) {
+      await connect();
+    }
+
+    if (!publicKey) {
+      throw new Error("Conecta tu wallet Phantom para registrarte");
+    }
+
+    const exists = await checkProgramExists();
+
+    if (!exists) {
+      throw new Error("Programa de Solana no desplegado");
+    }
+
+    const program = getProgram(wallet as any) as any;
+    const pda = getUserAccountPDA(publicKey);
+
+    setUserAccountPda(pda.toString());
+
+    try {
+      await program.account.userAccount.fetch(pda);
+      throw new Error("El usuario ya existe en Solana");
+    } catch (error: any) {
+      if (error?.message === "El usuario ya existe en Solana") {
+        throw error;
+      }
+      console.log("Usuario no existe, creando...");
+    }
+
+    const emailHash = await hashText(form.email);
+    const telefonoHash = await hashText(form.telefono);
+
+    const tx = await program.methods
+      .createUser(
+        form.nombres,
+        form.primerapellido,
+        form.segundoapellido,
+        emailHash,
+        telefonoHash,
+        "local"
+      )
+      .accounts({
+        userAccount: pda,
+        user: publicKey,
+        systemProgram: SystemProgram.programId,
+      })
+      .rpc();
+
+    setTxSignature(tx);
+
+    localStorage.setItem(
+      "user",
+      JSON.stringify({
+        wallet: publicKey.toString(),
+        nombres: form.nombres,
+        primerapellido: form.primerapellido,
+        segundoapellido: form.segundoapellido,
+
+        email: form.email,
+        telefono: form.telefono,
+
+        emailHash,
+        telefonoHash,
+        authProvider: "local",
+        tx,
+        pda: pda.toString(),
+      })
+    );
+
+    await fetch("/api/auth/register-success", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         email: form.email,
-        code: codigo,
+        wallet: publicKey.toString(),
+        pda: pda.toString(),
+        tx,
       }),
     });
 
-    const data = await res.json();
+    return tx;
+  };
 
-    if (data.ok) {
-      // 🔥 LOGIN AUTOMÁTICO
-      const loginRes = await fetch("http://localhost:3001/api/auth/login", {
+  const verificarCodigo = async () => {
+    try {
+      setGlobalError("");
+      setGlobalSuccess("");
+      setLoading(true);
+
+      if (!codigo) {
+        setGlobalError("Ingresa el código de verificación");
+        return;
+      }
+
+      const res = await fetch("/api/auth/verify", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           email: form.email,
-          password: form.password,
+          code: codigo,
         }),
       });
 
-      const loginData = await loginRes.json();
+      const data = await res.json();
 
-      if (loginData.ok) {
-        localStorage.setItem("user", JSON.stringify(loginData.user));
-        router.push("/dashboard");
+      if (!data.ok) {
+        setGlobalError(data.error || "Código incorrecto");
+        return;
       }
 
-    } else {
-      setGlobalError("Código incorrecto");
+      await registrarUsuarioSolana();
+
+      setGlobalSuccess("Registro completado correctamente");
+      router.push("/dashboard");
+    } catch (error: any) {
+      console.error(error);
+      setGlobalError(error?.message || "Error verificando registro");
+    } finally {
+      setLoading(false);
     }
+  };
 
-  } catch (error) {
-    console.error(error);
-    setGlobalError("Error verificando código");
-  }
-};
+  const reenviarCodigo = async () => {
+    try {
+      setGlobalError("");
+      setGlobalSuccess("");
 
-const reenviarCodigo = async () => {
-  await fetch("http://localhost:3001/api/auth/resend", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email: form.email }),
-  });
-};
+      const res = await fetch("/api/auth/resend", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: form.email }),
+      });
 
+      const data = await res.json();
+
+      if (!data.ok) {
+        setGlobalError(data.error || "Error reenviando código");
+        return;
+      }
+
+      setGlobalSuccess("Código reenviado correctamente");
+    } catch (error) {
+      console.error(error);
+      setGlobalError("Error reenviando código");
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0F172A] text-white">
@@ -205,84 +331,109 @@ const reenviarCodigo = async () => {
           </p>
         )}
 
-        {/* Nombre */}
+        {globalSuccess && (
+          <p className="text-[#00BB77] text-sm mb-4 text-center">
+            {globalSuccess}
+          </p>
+        )}
+
         <input
           type="text"
           name="nombres"
           placeholder="Nombre(s)"
           value={form.nombres}
           onChange={handleChange}
+          disabled={step === "verify"}
           className="w-full mb-1 p-3 rounded bg-[#0F172A] border border-gray-600"
         />
-        {errors.nombres && <p className="text-red-400 text-sm mb-3">{errors.nombres}</p>}
+        {errors.nombres && (
+          <p className="text-red-400 text-sm mb-3">{errors.nombres}</p>
+        )}
 
-        {/* Primer Apellido */}
         <input
           type="text"
           name="primerapellido"
           placeholder="Primer Apellido"
           value={form.primerapellido}
           onChange={handleChange}
+          disabled={step === "verify"}
           className="w-full mb-1 p-3 rounded bg-[#0F172A] border border-gray-600"
         />
-        {errors.primerapellido && <p className="text-red-400 text-sm mb-3">{errors.primerapellido}</p>}
+        {errors.primerapellido && (
+          <p className="text-red-400 text-sm mb-3">
+            {errors.primerapellido}
+          </p>
+        )}
 
-        {/* Segundo Apellido */}
         <input
           type="text"
           name="segundoapellido"
           placeholder="Segundo Apellido"
           value={form.segundoapellido}
           onChange={handleChange}
+          disabled={step === "verify"}
           className="w-full mb-1 p-3 rounded bg-[#0F172A] border border-gray-600"
         />
-        {errors.segundoapellido && <p className="text-red-400 text-sm mb-3">{errors.segundoapellido}</p>}
+        {errors.segundoapellido && (
+          <p className="text-red-400 text-sm mb-3">
+            {errors.segundoapellido}
+          </p>
+        )}
 
-        {/* Email */}
         <input
           type="email"
           name="email"
           placeholder="Correo electrónico"
           value={form.email}
           onChange={handleChange}
+          disabled={step === "verify"}
           className="w-full mb-1 p-3 rounded bg-[#0F172A] border border-gray-600"
         />
-        {errors.email && <p className="text-red-400 text-sm mb-3">{errors.email}</p>}
+        {errors.email && (
+          <p className="text-red-400 text-sm mb-3">{errors.email}</p>
+        )}
 
-        {/* Teléfono */}
         <input
           type="text"
           name="telefono"
           placeholder="Teléfono"
           value={form.telefono}
           onChange={handleChange}
+          disabled={step === "verify"}
           className="w-full mb-1 p-3 rounded bg-[#0F172A] border border-gray-600"
         />
-        {errors.telefono && <p className="text-red-400 text-sm mb-3">{errors.telefono}</p>}
+        {errors.telefono && (
+          <p className="text-red-400 text-sm mb-3">{errors.telefono}</p>
+        )}
 
-        {/* Password */}
         <input
           type="password"
           name="password"
           placeholder="Contraseña"
           value={form.password}
           onChange={handleChange}
+          disabled={step === "verify"}
           className="w-full mb-1 p-3 rounded bg-[#0F172A] border border-gray-600"
         />
-        {errors.password && <p className="text-red-400 text-sm mb-3">{errors.password}</p>}
+        {errors.password && (
+          <p className="text-red-400 text-sm mb-3">{errors.password}</p>
+        )}
 
-        {/* Confirm Password */}
         <input
           type="password"
           name="confirmPassword"
           placeholder="Confirmar Contraseña"
           value={form.confirmPassword}
           onChange={handleChange}
+          disabled={step === "verify"}
           className="w-full mb-1 p-3 rounded bg-[#0F172A] border border-gray-600"
         />
-        {errors.confirmPassword && <p className="text-red-400 text-sm mb-3">{errors.confirmPassword}</p>}
+        {errors.confirmPassword && (
+          <p className="text-red-400 text-sm mb-3">
+            {errors.confirmPassword}
+          </p>
+        )}
 
-        {/* Código */}
         {step === "verify" && (
           <input
             type="text"
@@ -293,21 +444,53 @@ const reenviarCodigo = async () => {
           />
         )}
 
-        {/* Botón */}
         <button
           type="button"
-          onClick={() => {
-            if (step === "form") enviarCodigo();
-            else verificarCodigo();
-          }}
-          className="w-full bg-[#00BB77] py-3 rounded font-semibold hover:bg-[#009966]"
+          onClick={step === "form" ? enviarCodigo : verificarCodigo}
+          disabled={loading}
+          className="w-full bg-[#00BB77] py-3 rounded font-semibold hover:bg-[#009966] disabled:opacity-60"
         >
-          {step === "form" ? "Registrarse" : "Verificar código"}
+          {loading
+            ? step === "form"
+              ? "Enviando código..."
+              : "Verificando y registrando..."
+            : step === "form"
+            ? "Registrarse"
+            : "Verificar código"}
         </button>
 
-        <button onClick={reenviarCodigo}>
-          Reenviar código
-        </button>
+        {step === "verify" && (
+          <button
+            type="button"
+            onClick={reenviarCodigo}
+            className="w-full mt-3 border border-gray-500 py-2 rounded hover:bg-gray-700 transition text-sm"
+          >
+            Reenviar código
+          </button>
+        )}
+
+        {userAccountPda && (
+          <div className="mt-4 text-center">
+            <p className="text-sm text-gray-300 break-all">
+              <span className="font-bold text-white">UserAccount PDA:</span>{" "}
+              {userAccountPda}
+            </p>
+
+            <button
+              type="button"
+              onClick={() => navigator.clipboard.writeText(userAccountPda)}
+              className="mt-2 bg-[#7C3AED] hover:bg-[#6D28D9] px-3 py-1 rounded text-sm"
+            >
+              Copiar PDA
+            </button>
+          </div>
+        )}
+
+        {txSignature && (
+          <p className="mt-3 text-center text-xs text-blue-400 break-all">
+            TX: {txSignature}
+          </p>
+        )}
 
         <p className="text-sm text-center mt-4">
           ¿Ya tienes cuenta?{" "}
@@ -319,4 +502,5 @@ const reenviarCodigo = async () => {
     </div>
   );
 }
+
 

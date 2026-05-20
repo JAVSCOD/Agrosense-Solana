@@ -1,138 +1,545 @@
-# 🌱 AgroSense
+<div align="center">
 
-AgroSense es una plataforma de agricultura inteligente que integra tecnologías IoT, automatización agrícola y monitoreo ambiental en tiempo real para optimizar el control y supervisión de cultivos mediante una arquitectura moderna y escalable.
+# 🌱 AgroSense-Web3
 
-El sistema combina sensores físicos conectados a un ESP32, un backend desarrollado en Node.js, un dashboard moderno construido con Next.js y una infraestructura basada en Docker.
+### 🚀 Plataforma Inteligente de Agricultura + IoT + Blockchain Solana
 
----
-
-# 🚀 Características principales
-
-✅ Monitoreo de humedad del suelo en tiempo real  
-✅ Monitoreo de pH del agua/suelo  
-✅ Visualización de temperatura ambiental  
-✅ Sistema de riego automático y manual  
-✅ Dashboard interactivo con gráficas dinámicas  
-✅ Historial de lecturas en tiempo real  
-✅ Comunicación IoT mediante ESP32  
-✅ API REST con Express  
-✅ Comunicación en tiempo real con Socket.IO  
-✅ Persistencia de datos con MongoDB  
-✅ Proxy reverso mediante NGINX  
-✅ Docker y Docker Compose  
-✅ Autenticación manual + OAuth  
-✅ Arquitectura escalable y modular  
+Monitoreo agrícola en tiempo real, automatización de riego e identidad Web3 utilizando Solana.
 
 ---
 
-# 🧠 Objetivo del proyecto
-
-El objetivo de AgroSense es demostrar cómo las tecnologías IoT y automatización pueden mejorar la agricultura moderna mediante:
-
-- 🌱 Automatización agrícola
-- 📊 Monitoreo inteligente
-- 📡 Supervisión remota
-- 📈 Análisis en tiempo real
-- 💧 Optimización del riego
-- ⚙️ Escalabilidad tecnológica
+![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)
+![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![Node.js](https://img.shields.io/badge/Node.js-20-339933?style=for-the-badge&logo=node.js&logoColor=white)
+![Solana](https://img.shields.io/badge/Solana-Web3-9945FF?style=for-the-badge&logo=solana&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![ESP32](https://img.shields.io/badge/ESP32-IoT-E7352C?style=for-the-badge)
+![MongoDB](https://img.shields.io/badge/MongoDB-Database-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
 
 ---
 
-# 🏗️ Arquitectura del sistema
+### 🌾 Agricultura Inteligente • 🔗 Web3 • 📡 IoT • ⚡ Solana
+
+</div>
+
+---
+
+# 📚 Índice
+
+- [📖 Descripción general](#-descripción-general)
+- [🎯 Objetivo del proyecto](#-objetivo-del-proyecto)
+- [🚨 Problemática](#-problemática)
+- [💡 Solución propuesta](#-solución-propuesta)
+- [🧠 ¿Qué hace AgroSense-Web3?](#-qué-hace-agrosense-web3)
+- [🏗️ Arquitectura general](#️-arquitectura-general)
+- [🔗 Integración Blockchain Solana](#-integración-blockchain-solana)
+- [🧬 Funcionamiento Web3](#-funcionamiento-web3)
+- [🌐 Frontend](#-frontend)
+- [⚙️ Backend](#️-backend)
+- [📡 IoT y ESP32](#-iot-y-esp32)
+- [📊 Dashboard agrícola](#-dashboard-agrícola)
+- [🔒 Seguridad](#-seguridad)
+- [🐳 Docker y contenedores](#-docker-y-contenedores)
+- [📁 Estructura del proyecto](#-estructura-del-proyecto)
+- [⚙️ Variables de entorno](#️-variables-de-entorno)
+- [🚀 Instalación completa](#-instalación-completa)
+- [📦 Ejecución con Docker](#-ejecución-con-docker)
+- [🛰️ Flujo completo del sistema](#️-flujo-completo-del-sistema)
+- [📈 Variables monitoreadas](#-variables-monitoreadas)
+- [📨 Sistema de correos](#-sistema-de-correos)
+- [🧩 APIs utilizadas](#-apis-utilizadas)
+- [🛠️ Tecnologías utilizadas](#️-tecnologías-utilizadas)
+- [🧪 Estado actual del proyecto](#-estado-actual-del-proyecto)
+- [🚧 Próximas mejoras](#-próximas-mejoras)
+- [🌎 Aplicaciones reales](#-aplicaciones-reales)
+- [🏆 Enfoque Web3 y Solana](#-enfoque-web3-y-solana)
+- [👨‍💻 Autor](#-autor)
+- [📄 Licencia](#-licencia)
+
+---
+# 📖 Descripción general
+
+## 🌱 ¿Qué es AgroSense-Web3?
+
+AgroSense-Web3 es una plataforma de agricultura inteligente que combina:
+
+* Internet de las Cosas (IoT)
+* Automatización agrícola
+* Blockchain Solana
+* Dashboards web interactivos
+* Sensores físicos
+* Web3 Authentication
+* Smart Contracts
+
+El sistema fue desarrollado con el objetivo de modernizar el monitoreo agrícola mediante una solución tecnológica capaz de:
+
+✅ Monitorear cultivos en tiempo real
+✅ Automatizar procesos de riego
+✅ Analizar variables ambientales
+✅ Utilizar identidad descentralizada Web3
+✅ Integrar blockchain en agricultura
+✅ Mejorar el uso eficiente del agua
+✅ Visualizar métricas agrícolas desde cualquier lugar
+
+---
+
+# 🎯 Objetivo del proyecto
+
+El objetivo principal de AgroSense-Web3 es demostrar cómo la integración entre:
+
+* Agricultura
+* IoT
+* Automatización
+* Blockchain
+* Web3
+
+puede crear una solución moderna, escalable y eficiente para el sector agrícola.
+
+---
+
+# 🚨 Problemática
+
+Muchos sistemas agrícolas tradicionales presentan problemas como:
+
+* Uso ineficiente del agua
+* Falta de monitoreo en tiempo real
+* Ausencia de automatización
+* Dependencia de supervisión manual
+* Información descentralizada
+* Poca trazabilidad de datos
+* Infraestructura tecnológica limitada
+
+Además, la mayoría de plataformas agrícolas actuales dependen completamente de sistemas centralizados.
+
+---
+
+# 💡 Solución propuesta
+
+AgroSense-Web3 propone una plataforma que integra:
+
+## 🌐 Web3 + IoT + Automatización
+
+permitiendo:
+
+* Monitorear sensores agrícolas
+* Visualizar métricas en tiempo real
+* Automatizar decisiones de riego
+* Gestionar usuarios mediante Phantom Wallet
+* Registrar información en Solana
+* Crear una identidad agrícola descentralizada
+
+---
+
+# 🧠 ¿Qué hace AgroSense-Web3?
+
+El sistema permite:
+
+## 👤 Gestión Web3 de usuarios
+
+* Registro de usuario
+* Login Web3
+* Actualización de perfil
+* Identidad descentralizada
+
+---
+
+## 🌡️ Monitoreo agrícola
+
+* Humedad del suelo
+* Temperatura ambiental
+* pH del agua/suelo
+* Estado del sistema
+
+---
+
+## 💧 Automatización de riego
+
+* Activación manual
+* Activación automática
+* Lógica inteligente
+* Control mediante ESP32
+
+---
+
+## 📊 Dashboard interactivo
+
+* Historial de sensores
+* Visualización en tiempo real
+* Gráficas dinámicas
+* Alertas visuales
+
+---
+
+## 🔗 Blockchain Solana
+
+* Phantom Wallet
+* Anchor Framework
+* PDAs
+* Smart contracts
+* Verificación on-chain
+
+---
+
+# 🏗️ Arquitectura general
 
 ```text
-           ┌──────────────────┐
-           │      ESP32       │
-           │ Sensores IoT     │
-           └────────┬─────────┘
-                    │ HTTP
-                    ▼
-          ┌─────────────────────┐
-          │   Backend Express   │
-          │ Socket.IO + API     │
-          └────────┬────────────┘
-                   │
-        ┌──────────┴──────────┐
-        ▼                     ▼
- ┌──────────────┐     ┌────────────────┐
- │   MongoDB    │     │ Frontend       │
- │ Persistencia │     │ Next.js        │
- └──────────────┘     └────────────────┘
-                   ▲
-                   │
-                 NGINX
-          (Proxy reverso)
+                    ┌────────────────────┐
+                    │       ESP32        │
+                    │ Sensores IoT       │
+                    │ Humedad / pH       │
+                    └─────────┬──────────┘
+                              │
+                              │ HTTP
+                              ▼
+                    ┌────────────────────┐
+                    │ Backend Express    │
+                    │ API REST           │
+                    │ Socket.IO          │
+                    │ Nodemailer         │
+                    └─────────┬──────────┘
+                              │
+               ┌──────────────┴──────────────┐
+               ▼                             ▼
+      ┌──────────────────┐        ┌──────────────────┐
+      │ Dashboard Web    │        │ Sistema IoT      │
+      │ Next.js          │        │ Riego inteligente│
+      └─────────┬────────┘        └──────────────────┘
+                │
+                │ Web3
+                ▼
+      ┌───────────────────────┐
+      │ Phantom Wallet        │
+      └─────────┬─────────────┘
+                │
+                ▼
+      ┌───────────────────────┐
+      │ Solana Devnet         │
+      │ Anchor Program        │
+      │ PDA UserAccount       │
+      └───────────────────────┘
 ```
 
 ---
 
-# 🧩 Tecnologías utilizadas
+# 🔗 Integración Blockchain Solana
 
-## 🖥️ Frontend
-
-- Next.js
-- React
-- Tailwind CSS
-- Recharts
-- NextAuth
-- TypeScript
+AgroSense-Web3 utiliza Solana como infraestructura principal Web3.
 
 ---
 
-## ⚙️ Backend
+## 🔥 Funcionalidades blockchain
 
-- Node.js
-- Express
-- Socket.IO
-- JWT
-- Cookie Parser
-- CORS
-- API REST
+### ✅ Conexión Phantom Wallet
+
+El usuario puede autenticarse mediante su wallet.
 
 ---
 
-## 🗄️ Base de datos
+### ✅ Registro on-chain
 
-- MongoDB
-- Mongoose
-
----
-
-## 📡 IoT
-
-- ESP32
-- Sensor de humedad
-- Sensor de pH
-- Relay para bomba de agua
+Los datos del usuario son almacenados en una cuenta PDA dentro de Solana.
 
 ---
 
-## 🌐 Infraestructura
+### ✅ Login Web3
 
-- Docker
-- Docker Compose
-- NGINX
+El sistema verifica si existe la cuenta PDA.
 
 ---
 
-## ☁️ APIs externas
+### ✅ Actualización de perfil
 
-- WeatherAPI
+El perfil del usuario puede modificarse directamente desde blockchain.
+
+---
+
+### ✅ PDAs (Program Derived Addresses)
+
+Cada usuario tiene una cuenta única derivada mediante seeds.
+
+---
+
+# 🧬 Funcionamiento Web3
+
+---
+
+# 📝 Registro
+
+```text
+Usuario llena formulario
+↓
+Recibe código por correo
+↓
+Verifica código
+↓
+Conecta Phantom Wallet
+↓
+Se crea PDA en Solana
+↓
+Se guarda sesión Web3
+↓
+Acceso al dashboard
+```
+
+---
+
+# 🔑 Login
+
+```text
+Usuario conecta Phantom Wallet
+↓
+Frontend calcula PDA
+↓
+Consulta Solana
+↓
+Si existe:
+    acceso permitido
+Si no existe:
+    redirección a registro
+```
+
+---
+
+# 👤 Actualización de perfil
+
+```text
+Usuario modifica datos
+↓
+Frontend conserva valores originales
+↓
+Anchor ejecuta update_profile
+↓
+Solana actualiza PDA
+↓
+Frontend actualiza sesión
+↓
+Backend envía correo de confirmación
+```
+
+---
+
+# 🌐 Frontend
+
+El frontend fue desarrollado con:
+
+* Next.js
+* React
+* TypeScript
+* Tailwind CSS
+
+---
+
+## 📌 Funciones principales
+
+### Dashboard agrícola
+
+Visualización de sensores y métricas.
+
+### Login Web3
+
+Conexión mediante Phantom Wallet.
+
+### Sidebar interactivo
+
+Sistema modular de navegación.
+
+### Gestión de perfil
+
+Edición dinámica de información.
+
+### Diseño responsivo
+
+Compatible con desktop y futuras versiones móviles.
+
+---
+
+# ⚙️ Backend
+
+El backend fue desarrollado utilizando:
+
+* Node.js
+* Express
+* Socket.IO
+* Nodemailer
+* MongoDB
+* CORS
+* JWT
+
+---
+
+## 📌 Responsabilidades del backend
+
+### API REST
+
+Manejo de peticiones del frontend.
+
+### Comunicación IoT
+
+Recepción de datos del ESP32.
+
+### Envío de correos
+
+Verificación y notificaciones.
+
+### Socket.IO
+
+Actualización en tiempo real.
+
+### Integración MongoDB
+
+Almacenamiento de sensores y datos auxiliares.
+
+---
+
+# 📡 IoT y ESP32
+
+El ESP32 es el microcontrolador principal del sistema IoT.
+
+---
+
+## 🔌 Funciones del ESP32
+
+* Leer sensores
+* Enviar datos al backend
+* Activar bomba de agua
+* Automatizar riego
+* Conectarse vía WiFi
+
+---
+
+## 🌡️ Sensores utilizados
+
+### Sensor de humedad capacitivo
+
+Determina el nivel de humedad del suelo.
+
+### Sensor de pH
+
+Evalúa calidad del agua/suelo.
+
+### Sensor de temperatura
+
+Se complementa mediante WeatherAPI.
+
+---
+
+# 📊 Dashboard agrícola
+
+El dashboard permite:
+
+✅ Ver sensores en tiempo real
+✅ Consultar historial
+✅ Analizar gráficas
+✅ Visualizar estado de riego
+✅ Administrar perfil
+✅ Monitorear sistema
+
+---
+
+# 🔒 Seguridad
+
+## 🔐 Seguridad Web3
+
+* Wallet Authentication
+* Validación PDA
+* Identidad descentralizada
+
+---
+
+## 🔐 Seguridad Backend
+
+* Variables `.env`
+* JWT
+* Validación de rutas
+* CORS
+* Cookies seguras
+
+---
+
+## 🔐 Seguridad Blockchain
+
+* Solana PDAs
+* Anchor validation
+* Cuentas derivadas
+* Firmas criptográficas
+
+---
+
+# 🐳 Docker y contenedores
+
+El proyecto utiliza Docker para facilitar:
+
+* despliegue,
+* desarrollo,
+* portabilidad,
+* contenedores independientes.
+
+---
+
+# 📦 Servicios Docker
+
+## Frontend
+
+```text
+Puerto 3000
+```
+
+---
+
+## Backend
+
+```text
+Puerto 3001
+```
+
+---
+
+## NGINX
+
+```text
+Puerto 8080
+```
 
 ---
 
 # 📁 Estructura del proyecto
 
 ```text
-agrosense/
+agrosense-solana/
 │
-├── frontend/              # Dashboard web Next.js
-├── backend/               # API REST + Socket.IO
-├── nginx/                 # Proxy reverso
-├── ESP32/                 # Código IoT
-│   └── sensores.ino
+├── frontend/
+│   ├── src/
+│   │   ├── app/
+│   │   ├── components/
+│   │   ├── context/
+│   │   ├── lib/
+│   │   ├── idl/
+│   │   └── utils/
+│   │
+│   ├── public/
+│   ├── package.json
+│   └── Dockerfile
+│
+├── backend/
+│   ├── src/
+│   │   ├── controllers/
+│   │   ├── middleware/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   ├── utils/
+│   │   ├── socket.js
+│   │   └── app.js
+│   │
+│   ├── .env
+│   ├── package.json
+│   └── Dockerfile
+│
+├── nginx/
+│   └── default.conf
 │
 ├── docker-compose.yml
+│
 └── README.md
 ```
 
@@ -140,95 +547,83 @@ agrosense/
 
 # ⚙️ Variables de entorno
 
-## 🖥️ Frontend (.env.local)
+# Backend `.env`
 
 ```env
-NEXTAUTH_URL=http://localhost:8080
-NEXTAUTH_SECRET=supersecret123
-
-NEXT_PUBLIC_WEATHER_API_KEY=TU_API_KEY
+EMAIL_USER=tu_correo@gmail.com
+EMAIL_PASS=tu_password_app
+MONGO_URI=tu_uri_mongodb
+JWT_SECRET=super_secret
 ```
 
 ---
 
-## ⚙️ Backend (.env)
+# Frontend `.env.local`
 
 ```env
-MONGO_URI=TU_MONGO_URI
-
-JWT_SECRET=supersecret
+NEXT_PUBLIC_WEATHER_API_KEY=tu_api_key
+NEXT_PUBLIC_RPC_URL=https://api.devnet.solana.com
 ```
 
 ---
 
-# ⚙️ Instalación del proyecto
+# 🚀 Instalación completa
 
-## 1️⃣ Clonar repositorio
+# 1️⃣ Clonar repositorio
 
 ```bash
-git clone https://github.com/TU_USUARIO/agrosense.git
-
-cd agrosense
+git clone https://github.com/TU_USUARIO/agrosense-web3.git
 ```
 
 ---
 
-# 🖥️ Instalación Frontend
+# 2️⃣ Entrar al proyecto
+
+```bash
+cd agrosense-web3
+```
+
+---
+
+# 3️⃣ Instalar frontend
 
 ```bash
 cd frontend
-
 npm install
+```
 
+---
+
+# 4️⃣ Instalar backend
+
+```bash
+cd ../backend
+npm install
+```
+
+---
+
+# 5️⃣ Ejecutar frontend
+
+```bash
 npm run dev
 ```
 
-📍 Disponible en:
-
-```text
-http://localhost:3000
-```
-
 ---
 
-# ⚙️ Instalación Backend
+# 6️⃣ Ejecutar backend
 
 ```bash
-cd backend
-
-npm install
-
 npm run dev
 ```
 
-📍 API disponible en:
+---
 
-```text
-http://localhost:3001
-```
+# 📦 Ejecución con Docker
 
 ---
 
-## 📌 Requisitos previos
-
-Antes de ejecutar el proyecto necesitas instalar:
-
-- Node.js
-- Docker (opcional)
-
----
-
-# 🐳 Ejecución con Docker
-
-## 1️⃣ Levantar servicios
-
-```bash
-docker compose up -d
-```
-
----
-
-## 2️⃣ Reconstruir contenedores
+# Construir contenedores
 
 ```bash
 docker compose up --build -d
@@ -236,15 +631,7 @@ docker compose up --build -d
 
 ---
 
-## 3️⃣ Apagar servicios
-
-```bash
-docker compose down
-```
-
----
-
-## 4️⃣ Verificar contenedores
+# Ver contenedores
 
 ```bash
 docker ps
@@ -252,181 +639,232 @@ docker ps
 
 ---
 
-# 🌐 Acceso al sistema
+# Apagar contenedores
+
+```bash
+docker compose down
+```
+
+---
+
+# Reconstrucción completa
+
+```bash
+docker compose down
+
+docker compose up --build -d
+```
+
+---
+
+# 🛰️ Flujo completo del sistema
+
+```text
+Sensores físicos
+↓
+ESP32
+↓
+Backend Express
+↓
+Socket.IO
+↓
+Dashboard Next.js
+↓
+Usuario Web3
+↓
+Phantom Wallet
+↓
+Solana PDA
+```
+
+---
+
+# 📈 Variables monitoreadas
+
+| Variable     | Fuente            | Uso                |
+| ------------ | ----------------- | ------------------ |
+| Humedad      | Sensor capacitivo | Automatización     |
+| pH           | Sensor pH         | Calidad agrícola   |
+| Temperatura  | WeatherAPI        | Contexto climático |
+| Estado bomba | ESP32             | Riego              |
+| Usuario      | Solana PDA        | Identidad          |
+
+---
+
+# 📨 Sistema de correos
+
+El backend utiliza Nodemailer para:
+
+* Verificación de usuario
+* Confirmación de cambios
+* Alertas futuras
+* Validación de códigos
+
+---
+
+# 🧩 APIs utilizadas
+
+## 🌦️ WeatherAPI
+
+Obtención de:
+
+* temperatura,
+* humedad,
+* clima.
+
+---
+
+# 🛠️ Tecnologías utilizadas
 
 ## Frontend
 
+* Next.js
+* React
+* TypeScript
+* Tailwind CSS
+* Recharts
+
+---
+
+## Backend
+
+* Node.js
+* Express
+* Socket.IO
+* Nodemailer
+* MongoDB
+
+---
+
+## Blockchain
+
+* Solana
+* Anchor
+* Phantom Wallet
+* Web3.js
+
+---
+
+## IoT
+
+* ESP32
+* Sensores
+* Relay
+
+---
+
+## Infraestructura
+
+* Docker
+* Docker Compose
+* NGINX
+
+---
+
+# 🧪 Estado actual del proyecto
+
 ```text
-http://localhost:8080
+MVP funcional Web3 + IoT
 ```
 
 ---
 
-## Backend API
+# ✅ Actualmente implementado
 
-```text
-http://localhost:3001
-```
-
----
-
-# 📡 Funcionamiento del ESP32
-
-El ESP32:
-
-1. Se conecta a una red WiFi
-2. Lee sensores físicos
-3. Envía datos al backend mediante HTTP
-4. Consulta el estado del riego
-5. Activa o desactiva la bomba mediante relay
-
----
-
-# 📊 Variables monitoreadas
-
-| Variable     | Fuente        |
-| ------------ | ------------- |
-| Humedad      | Sensor ESP32  |
-| pH           | Sensor ESP32  |
-| Temperatura  | WeatherAPI    |
-| Estado bomba | Backend       |
-
----
-
-# 🔄 Flujo de funcionamiento
-
-1. Los sensores físicos recopilan datos.
-2. El ESP32 envía la información al backend.
-3. El backend procesa las métricas.
-4. Los datos se almacenan en MongoDB.
-5. El frontend consume la API.
-6. El dashboard muestra métricas en tiempo real.
-
----
-
-# 📊 Funcionalidades implementadas
-
-## ✅ Implementadas
-
-- Login manual
-- Login con Google
-- Login con GitHub
-- Dashboard dinámico
-- Gráficas en tiempo real
-- Simulación de sensores
-- Integración ESP32
-- Riego automático
-- Control manual de bomba
-- Historial de sensores
-- Socket.IO en tiempo real
-- API REST funcional
-- MongoDB persistente
-- Docker funcional
-- NGINX funcional
-
----
-
-# 🔒 Seguridad
-
-- JWT Authentication
-- Cookies HTTPOnly
-- OAuth con Google/GitHub
-- Variables de entorno protegidas
-- Middleware de autenticación
-- Arquitectura desacoplada
+* Login Web3
+* Registro Web3
+* Dashboard
+* Solana PDA
+* Perfil editable
+* Docker
+* NGINX
+* Socket.IO
+* WeatherAPI
+* Sistema IoT base
+* MongoDB
+* Correos automáticos
 
 ---
 
 # 🚧 Próximas mejoras
 
-- 📡 Sensores físicos avanzados
-- 🌡️ Sensor de temperatura físico
-- 🤖 IA para predicción de riego
-- 📱 Aplicación móvil
-- ☁️ Deploy en nube
-- 🌍 Multi-zonas agrícolas
-- 📈 Sistema inteligente de alertas
-- 📊 Exportación de métricas
-- 🌦️ Integración climática avanzada
+* IA predictiva
+* Multi-zonas agrícolas
+* App móvil
+* IPFS
+* NFTs agrícolas
+* Alertas inteligentes
+* Blockchain de sensores
+* Automatización avanzada
 
 ---
 
-# 🎯 Aplicaciones del proyecto
+# 🌎 Aplicaciones reales
 
-AgroSense puede utilizarse en:
+AgroSense-Web3 puede aplicarse en:
 
-- Agricultura inteligente
-- Invernaderos automatizados
-- Sistemas de riego inteligentes
-- Monitoreo remoto agrícola
-- Investigación tecnológica
+* Agricultura inteligente
+* Invernaderos
+* Sistemas hidropónicos
+* Monitoreo remoto
+* Automatización agrícola
+* Investigación IoT
+* Web3 agrícola
+
+---
+
+# 🏆 Enfoque Web3 y Solana
+
+El proyecto busca demostrar cómo Solana puede integrarse con sistemas físicos reales.
+
+---
+
+## ¿Por qué Solana?
+
+* Transacciones rápidas
+* Bajo costo
+* Escalabilidad
+* Integración sencilla
+* Excelente ecosistema Web3
 
 ---
 
 # 👨‍💻 Autor
 
-## Juan Alexis Velázquez
+# Juan Alexis Velázquez Soto
 
-Proyecto académico y experimental orientado a:
+## Full Stack & Blockchain Developer
 
-- 🌱 Agricultura inteligente
-- 📡 IoT
-- ☁️ Infraestructura web moderna
+Responsable de:
 
----
-
-# 🏆 Proyecto tipo Hackathon
-
-AgroSense combina tecnologías modernas como:
-
-- 🌱 Smart Farming
-- 📡 Internet de las Cosas (IoT)
-- ☁️ Arquitectura Web
-- 📊 Visualización de datos
-- 🤖 Automatización agrícola
-
----
-
-# ⚠️ Notas importantes
-
-- Configurar correctamente variables de entorno
-- Mantener ESP32 y servidor en la misma red
-- Proyecto en desarrollo
-
----
-
-# ⭐ Recomendación para ESP32
-
-Si utilizas hotspot móvil:
-
-```bash
-hostname -I
-```
-
-Actualizar la IP del backend dentro del ESP32 cuando cambie la red.
-
----
-
-# 📬 Contribuciones
-
-Las contribuciones son bienvenidas:
-
-1. Haz un Fork 🍴
-2. Crea una nueva rama 🌿
-3. Realiza tus cambios
-4. Envía un Pull Request 🚀
-
----
-
-# ⭐ Apóyalo
-
-Si te gusta el proyecto:
-
-⭐ Dale una estrella en GitHub
+* Frontend
+* Backend
+* Solana
+* Smart Contracts
+* Anchor
+* IoT
+* ESP32
+* Docker
+* Arquitectura Web3
 
 ---
 
 # 📄 Licencia
 
-Proyecto de uso académico, educativo y experimental.
+Proyecto académico y experimental.
 
+---
+
+# ⭐ Apóyalo
+
+Si el proyecto te parece interesante:
+
+```text
+⭐ Dale una estrella en GitHub
+```
+
+---
+
+# 🌱 AgroSense-Web3
+
+## Agricultura inteligente impulsada por IoT + Blockchain + Solana 🚀

@@ -1,7 +1,7 @@
 "use client";
 
-import { SessionProvider } from "next-auth/react";
 import { AuthProvider } from "@/context/AuthContext";
+import SolanaWalletProvider from "@/components/SolanaWalletProvider";
 
 export default function Providers({
   children,
@@ -9,11 +9,10 @@ export default function Providers({
   children: React.ReactNode;
 }) {
   return (
-    <SessionProvider>
-      <AuthProvider>
-        {children}
-      </AuthProvider>
-    </SessionProvider>
+    <SolanaWalletProvider>
+      <AuthProvider>{children}</AuthProvider>
+    </SolanaWalletProvider>
   );
 }
+
 

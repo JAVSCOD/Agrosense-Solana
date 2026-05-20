@@ -9,11 +9,8 @@ services:
     volumes:
       - ./backend:/app
       - /app/node_modules
-    environment:
-      - MONGO_URI=mongodb+srv://alexissoto3104_db_user:cBTOjbjiYUWnudsl@cluster0.aqv21pv.mongodb.net/agrosense?retryWrites=true&w=majority
-      - JWT_SECRET=supersecret
-    depends_on:
-      - mongo
+    env_file:
+      - ./backend/.env
 
   frontend:
     build: ./frontend
@@ -38,11 +35,3 @@ services:
     depends_on:
       - frontend
       - backend
-
-  mongo:
-    image: mongo:6
-    container_name: mongo
-    ports:
-      - "27017:27017"
-
-      

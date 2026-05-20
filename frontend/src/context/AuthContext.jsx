@@ -7,81 +7,46 @@ import {
   useEffect,
 } from "react";
 
-import { useSession, signOut } from "next-auth/react";
-
-// 🎯 Contexto
 const AuthContext = createContext();
 
-// 🚀 Provider
 export function AuthProvider({ children }) {
-  const { data: session, status } = useSession();
-
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔁 Obtener usuario de TU BACKEND
   const fetchUser = async () => {
     try {
-      const res = await fetch("/api/auth/me", {
-        credentials: "include",
-      });
+      const storedUser = localStorage.getItem("user");
 
-      const data = await res.json();
-
-      if (data.ok) {
-        setUser(data.user);
-      } else {
+      if (!storedUser) {
         setUser(null);
-      }
-    } catch (error) {
-      setUser(null);
-    } finally {
-      setLoading(false); // 🔥 SIEMPRE termina loading
-    }
-  };
-
-  // 🔥 CONTROL TOTAL DE AUTH (SIN LOOPS)
-  useEffect(() => {
-    const initAuth = async () => {
-      // ⏳ Esperar a next-auth
-      if (status === "loading") return;
-
-      // 🔵 LOGIN OAUTH (Google / GitHub)
-      if (session?.user) {
-        setUser({
-          nombres: session.user.name || "",
-          email: session.user.email || "",
-          image: session.user.image || "",
-          provider: "oauth",
-        });
-
-        setLoading(false);
         return;
       }
 
-      // 🟢 LOGIN MANUAL (backend)
-      await fetchUser();
-    };
+      const parsedUser = JSON.parse(storedUser);
 
-    initAuth();
-  }, [session, status]);
+      if (!parsedUser.wallet || !parsedUser.pda) {
+        localStorage.removeItem("user");
+        setUser(null);
+        return;
+      }
 
-  // 🚪 LOGOUT GLOBAL
-  const logout = async () => {
-    try {
-      // 🔹 backend
-      await fetch("http://localhost:8080/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-
-      // 🔹 next-auth
-      await signOut({ redirect: false });
-
-      setUser(null);
+      setUser(parsedUser);
     } catch (error) {
-      console.error("Error al cerrar sesión");
+      localStorage.removeItem("user");
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
+  const logout = async () => {
+    localStorage.removeItem("user");
+    setUser(null);
+    window.location.href = "/login";
   };
 
   return (
@@ -99,7 +64,6 @@ export function AuthProvider({ children }) {
   );
 }
 
-// 🎯 Hook
 export function useAuth() {
   const context = useContext(AuthContext);
 

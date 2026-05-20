@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import mongoose from "mongoose";
+//import mongoose from "mongoose";
 import dotenv from "dotenv";
 import http from "http";
 import { Server } from "socket.io";
@@ -35,7 +35,7 @@ const PORT = 3001;
 // 🔥 SOCKET.IO
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:8080",
+    origin: "http://localhost:3000",
     credentials: true,
   },
 });
@@ -43,15 +43,15 @@ const io = new Server(server, {
 setIO(io);
 
 // 🔥 CONEXIÓN MONGO
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB conectado"))
-  .catch((err) => console.log("❌ Error Mongo:", err));
+//mongoose
+//  .connect(process.env.MONGO_URI)
+//  .then(() => console.log("✅ MongoDB conectado"))
+//  .catch((err) => console.log("❌ Error Mongo:", err));
 
 // 🔥 MIDDLEWARES
 app.use(
   cors({
-    origin: "http://localhost:8080",
+    origin: "http://localhost:3000",
     credentials: true,
   })
 );
