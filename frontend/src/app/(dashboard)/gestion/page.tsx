@@ -25,7 +25,7 @@ export default function Gestion() {
   // 🎨 COLOR DINÁMICO
   const getColor = () => {
     if (humedad < 30) return "#ef4444";
-    if (humedad < 70) return "#22c55e";
+    if (humedad < 85) return "#22c55e";
     return "#3b82f6";
   };
 
@@ -33,17 +33,26 @@ export default function Gestion() {
   useEffect(() => {
     const cargar = async () => {
       try {
-        const estadoRes = await fetch("http://localhost:8080/api/riego");
+
+        // 🔥 CORREGIDO
+        const estadoRes = await fetch(
+          "http://localhost:8080/api/riego/estado"
+        );
+
         const estado = await estadoRes.json();
 
         setRiego(estado.riego);
         setAutomatico(estado.automatico);
         setZona(estado.zona);
 
-        const histRes = await fetch("http://localhost:8080/api/riego/historial");
+        const histRes = await fetch(
+          "http://localhost:8080/api/riego/historial"
+        );
+
         const histData = await histRes.json();
 
         setHistorial(histData.data || []);
+
       } catch (error) {
         console.error(error);
       }
@@ -143,6 +152,7 @@ export default function Gestion() {
             {/* MANUAL */}
             <div className="bg-white p-6 rounded-2xl shadow-md">
               <p className="text-gray-500 mb-2">Riego manual</p>
+
               <button
                 disabled={bloqueoRiego}
                 onClick={() => actualizarEstado({ riego: !riego })}
@@ -165,9 +175,14 @@ export default function Gestion() {
             {/* AUTOMÁTICO */}
             <div className="bg-white p-6 rounded-2xl shadow-md">
               <p className="text-gray-500 mb-2">Modo automático</p>
+
               <button
                 disabled={bloqueoRiego}
-                onClick={() => actualizarEstado({ automatico: !automatico })}
+                onClick={() =>
+                  actualizarEstado({
+                    automatico: !automatico,
+                  })
+                }
                 className={`w-full py-2 rounded-lg font-bold ${
                   bloqueoRiego
                     ? "bg-gray-300 text-gray-500 cursor-not-allowed"
@@ -187,11 +202,15 @@ export default function Gestion() {
             {/* ZONA */}
             <div className="bg-white p-6 rounded-2xl shadow-md">
               <p className="text-gray-500 mb-2">Zona</p>
+
               <select
                 value={zona}
                 onChange={(e) => {
                   setZona(e.target.value);
-                  actualizarEstado({ zona: e.target.value });
+
+                  actualizarEstado({
+                    zona: e.target.value,
+                  });
                 }}
                 className="w-full p-2 border rounded-lg"
               >
@@ -204,7 +223,6 @@ export default function Gestion() {
           </div>
 
           {/* ESTADO */}
-          {/* ESTADO */}
           <div className="grid md:grid-cols-2 gap-6 items-start">
 
             {/* 🔥 CÍRCULO PRO */}
@@ -214,7 +232,6 @@ export default function Gestion() {
                 Estado del sistema
               </h2>
 
-              {/* 🔥 CONTENIDO CENTRADO REAL */}
               <div className="flex flex-col items-center justify-center flex-1 gap-6">
 
                 {/* CÍRCULO */}
@@ -264,6 +281,7 @@ export default function Gestion() {
                     <span className="text-6xl font-extrabold">
                       {humedad}%
                     </span>
+
                     <span className="text-sm text-gray-400">
                       humedad
                     </span>
@@ -276,15 +294,25 @@ export default function Gestion() {
                   Humedad del suelo
                 </p>
 
-                {/* ESTADO */}
+                {/* 🔥 NUEVO ESTADO */}
                 <div
-                  className={`px-6 py-2 rounded-full text-sm font-bold shadow-sm ${
-                    estaRegando
+                  className={`px-6 py-2 rounded-full text-sm font-bold shadow-sm transition-all duration-300 ${
+                    automatico
+                      ? estaRegando
+                        ? "bg-blue-100 text-blue-600"
+                        : "bg-yellow-100 text-yellow-700"
+                      : estaRegando
                       ? "bg-blue-100 text-blue-600"
                       : "bg-red-100 text-red-600"
                   }`}
                 >
-                  {estaRegando ? "💧 Riego activo" : "🌱 Riego apagado"}
+                  {automatico
+                    ? estaRegando
+                      ? "🤖 Automático regando"
+                      : "🤖 Automático en espera"
+                    : estaRegando
+                    ? "💧 Riego activo"
+                    : "🌱 Riego apagado"}
                 </div>
 
               </div>

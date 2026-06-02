@@ -17,6 +17,8 @@ export default function Analitica() {
   // 🌤️ CLIMA API
   const [clima, setClima] = useState<any>(null);
 
+  const CIUDAD = "Jilotepec Estado de Mexico";
+
   // 🌤️ OBTENER TEMPERATURA DESDE WEATHER API
   useEffect(() => {
 
@@ -24,12 +26,18 @@ export default function Analitica() {
       try {
 
         const res = await fetch(
-          `https://api.weatherapi.com/v1/current.json?key=${process.env.NEXT_PUBLIC_WEATHER_API_KEY}&q=Jilotepec&lang=es`
+          `https://api.weatherapi.com/v1/current.json?key=${process.env.NEXT_PUBLIC_WEATHER_API_KEY}&q=${encodeURIComponent(
+            CIUDAD
+          )}&lang=es`
         );
 
         const json = await res.json();
 
-        setClima(json);
+        console.log("CLIMA API:", json);
+
+        if (json.current) {
+          setClima(json);
+        }
 
       } catch (error) {
         console.error("Error obteniendo clima:", error);
@@ -66,7 +74,13 @@ export default function Analitica() {
             humedad: json.data.humedad ?? 0,
 
             // 🌡️ TEMPERATURA DESDE API
-            temperatura: clima?.current?.temp_c ?? 0,
+            temperatura:
+              clima?.current?.temp_c ??
+              json.data.temperatura ??
+              0,
+
+            // 🌡️ SENSOR REAL
+            // temperatura: json.data.temperatura ?? 0,
 
             // ⚗️ SENSOR REAL
             ph: Number(

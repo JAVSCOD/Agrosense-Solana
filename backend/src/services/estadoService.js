@@ -109,8 +109,8 @@ export const getDecision = () => {
 
   // 🤖 AUTOMÁTICO
   else {
-    if (humedad < 40) nuevaBomba = true;
-    else if (humedad > 60) nuevaBomba = false;
+    if (humedad < 30) nuevaBomba = true;
+    else if (humedad > 85) nuevaBomba = false;
   }
 
   // 🔁 CAMBIO REAL

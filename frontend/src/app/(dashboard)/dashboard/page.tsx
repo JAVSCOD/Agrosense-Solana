@@ -23,7 +23,8 @@ export default function Dashboard() {
   const [data, setData] = useState<any[]>([]);
   const [clima, setClima] = useState<any>(null);
 
-  // 🔐 PROTECCIÓN WEB3
+  const CIUDAD = "Jilotepec Estado de Mexico";
+
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
 
@@ -52,44 +53,21 @@ export default function Dashboard() {
     }
   }, [router]);
 
-  // 🔥 SENSOR
-  useEffect(() => {
-    const obtenerDatos = async () => {
-      try {
-        const res = await fetch(
-          "http://localhost:8080/api/riego/sensores"
-        );
-        const json = await res.json();
-
-        if (json.ok && json.data) {
-          const nuevo = {
-            tiempo: new Date().toLocaleTimeString(),
-            humedad: json.data.humedad,
-            temperatura: clima?.current?.temp_c ?? 0,
-            ph: json.data.ph,
-          };
-
-          setData((prev) => [...prev.slice(-10), nuevo]);
-        }
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    };
-
-    const intervalo = setInterval(obtenerDatos, 3000);
-    return () => clearInterval(intervalo);
-  }, [clima]);
-
-  // 🌤️ CLIMA
+  // 🌤️ CLIMA API
   useEffect(() => {
     const obtenerClima = async () => {
       try {
         const res = await fetch(
-          `https://api.weatherapi.com/v1/current.json?key=${process.env.NEXT_PUBLIC_WEATHER_API_KEY}&q=Jilotepec&lang=es`
+          `https://api.weatherapi.com/v1/current.json?key=${
+            process.env.NEXT_PUBLIC_WEATHER_API_KEY
+          }&q=${encodeURIComponent(CIUDAD)}&lang=es`
         );
 
-        const data = await res.json();
-        setClima(data);
+        const json = await res.json();
+
+        if (json.current) {
+          setClima(json);
+        }
       } catch (error) {
         console.error("Error clima:", error);
       }
@@ -101,6 +79,44 @@ export default function Dashboard() {
     return () => clearInterval(intervalo);
   }, []);
 
+  // 🔥 SENSOR
+  useEffect(() => {
+    const obtenerDatos = async () => {
+      try {
+        const res = await fetch("http://localhost:8080/api/riego/sensores");
+        const json = await res.json();
+
+        if (json.ok && json.data) {
+          const nuevo = {
+            tiempo: new Date().toLocaleTimeString(),
+
+            humedad: json.data.humedad,
+
+            // 🌡️ TEMPERATURA DESDE API
+            temperatura:
+              clima?.current?.temp_c ??
+              json.data.temperatura ??
+              0,
+
+            // 🌡️ TEMPERATURA SENSOR ESP32
+            // temperatura: json.data.temperatura ?? 0,
+
+            ph: json.data.ph,
+          };
+
+          setData((prev) => [...prev.slice(-10), nuevo]);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    };
+
+    obtenerDatos();
+
+    const intervalo = setInterval(obtenerDatos, 3000);
+    return () => clearInterval(intervalo);
+  }, [clima]);
+
   if (authLoading) {
     return <p className="p-4">Cargando sesión Web3...</p>;
   }
@@ -110,7 +126,7 @@ export default function Dashboard() {
   const ultimo = data[data.length - 1];
 
   const obtenerTemperatura = () => {
-    if (clima?.current?.temp_c) {
+    if (clima?.current?.temp_c !== undefined) {
       return {
         valor: clima.current.temp_c,
         fuente: "api",
@@ -118,8 +134,8 @@ export default function Dashboard() {
     }
 
     return {
-      valor: 0,
-      fuente: "none",
+      valor: ultimo?.temperatura ?? 0,
+      fuente: "sensor",
     };
   };
 
@@ -127,19 +143,19 @@ export default function Dashboard() {
 
   const phValido = (ph: any) => {
     const valor = parseFloat(ph ?? "0");
-    return valor >= 5 && valor <= 8;
+    return valor >= 6 && valor <= 8;
   };
 
   const phActual = parseFloat(ultimo?.ph ?? "0");
 
   const getHumedadStatus = (h: number) => {
     if (h < 30) return "Seco ⚠️";
-    if (h <= 70) return "Óptimo ✅";
+    if (h <= 85) return "Óptimo ✅";
     return "Exceso 💧";
   };
 
   const getPhStatus = (ph: number) => {
-    if (ph < 5) return "Ácido ⚠️";
+    if (ph < 6) return "Ácido ⚠️";
     if (ph <= 8) return "Neutro ✅";
     return "Alcalino ⚠️";
   };
@@ -158,7 +174,7 @@ export default function Dashboard() {
       return "🚫 Agua no apta";
     }
 
-    if (ultimo.humedad < 40) {
+    if (ultimo.humedad < 30) {
       return "💧 Regar cultivo";
     }
 
@@ -241,7 +257,7 @@ export default function Dashboard() {
             <div className="bg-white p-4 rounded-xl shadow">
               <p className="text-gray-500">Acción pH</p>
               <h2 className="text-lg font-bold">
-                {phActual < 5
+                {phActual < 6
                   ? "Revisar fuente de agua 🚫"
                   : phActual <= 8
                   ? "Apto para riego ✅"
@@ -299,6 +315,8 @@ export default function Dashboard() {
                     if (name === "ph") return [`${num.toFixed(2)} pH`, "pH"];
                     if (name === "humedad")
                       return [`${num.toFixed(0)}%`, "Humedad"];
+                    if (name === "temperatura")
+                      return [`${num.toFixed(1)}°C`, "Temperatura"];
 
                     return value;
                   }}
@@ -357,8 +375,6 @@ export default function Dashboard() {
                   ? "🚫 Agua no apta para riego"
                   : ultimo?.humedad < 30
                   ? "Regar cultivo 💧"
-                  : clima?.weather?.[0]?.main === "Rain"
-                  ? "No regar (lluvia)"
                   : "Condiciones óptimas"}
               </p>
             </div>

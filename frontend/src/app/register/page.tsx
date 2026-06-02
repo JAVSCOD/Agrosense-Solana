@@ -215,26 +215,7 @@ export default function Register() {
 
     setTxSignature(tx);
 
-    localStorage.setItem(
-      "user",
-      JSON.stringify({
-        wallet: publicKey.toString(),
-        nombres: form.nombres,
-        primerapellido: form.primerapellido,
-        segundoapellido: form.segundoapellido,
-
-        email: form.email,
-        telefono: form.telefono,
-
-        emailHash,
-        telefonoHash,
-        authProvider: "local",
-        tx,
-        pda: pda.toString(),
-      })
-    );
-
-    await fetch("/api/auth/register-success", {
+    const successRes = await fetch("/api/auth/register-success", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -246,6 +227,28 @@ export default function Register() {
         tx,
       }),
     });
+
+    const successData = await successRes.json();
+
+    if (!successData.ok) {
+      throw new Error(successData.error || "Error finalizando registro");
+    }
+
+    const usuarioFinal = successData.user || {
+      wallet: publicKey.toString(),
+      nombres: form.nombres,
+      primerapellido: form.primerapellido,
+      segundoapellido: form.segundoapellido,
+      email: form.email,
+      telefono: form.telefono,
+      emailHash,
+      telefonoHash,
+      authProvider: "local",
+      tx,
+      pda: pda.toString(),
+    };
+
+    localStorage.setItem("user", JSON.stringify(usuarioFinal));
 
     return tx;
   };
@@ -282,7 +285,8 @@ export default function Register() {
       await registrarUsuarioSolana();
 
       setGlobalSuccess("Registro completado correctamente");
-      router.push("/dashboard");
+      window.location.href = "/dashboard";
+
     } catch (error: any) {
       console.error(error);
       setGlobalError(error?.message || "Error verificando registro");

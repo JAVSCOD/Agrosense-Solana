@@ -140,9 +140,10 @@ export default function Perfil() {
 
       setUser(updatedUser);
       localStorage.setItem("user", JSON.stringify(updatedUser));
+      window.dispatchEvent(new Event("userUpdated"));
       setEditando(false);
 
-      await fetch("http://localhost:3001/api/auth/profile-updated", {
+      await fetch("/api/auth/profile-updated", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -159,7 +160,16 @@ export default function Perfil() {
         }),
       });
 
-      mostrarToast("Perfil actualizado correctamente ✅");
+      window.dispatchEvent(
+        new CustomEvent("agrosense-notificacion", {
+          detail: {
+            titulo: "Perfil actualizado",
+            mensaje: "Perfil actualizado correctamente",
+            tipo: "success",
+          },
+        })
+      );
+      
     } catch (error: any) {
       console.error("Error actualizando perfil:", error);
       setMensaje(error?.message || "Error actualizando perfil en Solana");
@@ -211,7 +221,7 @@ export default function Perfil() {
 
         <div className="bg-white p-6 rounded-xl shadow mt-6">
           <h2 className="font-semibold mb-4 text-gray-900">
-            Información personal 👤
+            Información personal
           </h2>
 
           {mensaje && <p className="mb-4 text-sm text-red-600">{mensaje}</p>}
@@ -261,7 +271,7 @@ export default function Perfil() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
           <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
             <h2 className="font-semibold mb-4 text-lg text-gray-900">
-              Seguridad 🔐
+              Seguridad
             </h2>
 
             <button className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition">
@@ -271,7 +281,7 @@ export default function Perfil() {
 
           <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
             <h2 className="font-semibold mb-4 text-lg text-gray-900">
-              Preferencias 🌐
+              Preferencias
             </h2>
 
             <div className="space-y-2 text-gray-700">

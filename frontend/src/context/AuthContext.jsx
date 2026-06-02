@@ -32,6 +32,7 @@ export function AuthProvider({ children }) {
 
       setUser(parsedUser);
     } catch (error) {
+      console.error("Error cargando usuario:", error);
       localStorage.removeItem("user");
       setUser(null);
     } finally {
@@ -41,6 +42,16 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     fetchUser();
+
+    const syncUser = () => {
+      fetchUser();
+    };
+
+    window.addEventListener("userUpdated", syncUser);
+
+    return () => {
+      window.removeEventListener("userUpdated", syncUser);
+    };
   }, []);
 
   const logout = async () => {

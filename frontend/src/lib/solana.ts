@@ -9,7 +9,7 @@ import {
 import idl from "../idl/agrosense_solana.json";
 
 export const PROGRAM_ID = new PublicKey(
-  "AhyXk9pLZq5U1CuyDPAutji2y6jw3b3dMLPciaPB2VVu"
+  "6fJsVc1svMxESqHmcMx87pRcDQehsfQchodxLpwRpXKY"
 );
 
 export const connection = new Connection(

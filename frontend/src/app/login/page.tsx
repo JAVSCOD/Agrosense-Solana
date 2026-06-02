@@ -8,7 +8,6 @@ import dynamic from "next/dynamic";
 import {
   getProgram,
   getUserAccountPDA,
-  checkProgramExists,
 } from "@/lib/solana";
 
 const ConnectWalletButton = dynamic(
@@ -34,16 +33,11 @@ export default function Login() {
         return;
       }
 
-      console.log("Wallet login:", publicKey.toString());
-
       const program = getProgram(wallet as any) as any;
       const userAccountPda = getUserAccountPDA(publicKey);
 
-      console.log("PDA login:", userAccountPda.toString());
-
-      const userAccount = await program.account.userAccount.fetch(userAccountPda);
-
-      console.log("Usuario encontrado en Solana:", userAccount);
+      const userAccount =
+        await program.account.userAccount.fetch(userAccountPda);
 
       localStorage.setItem(
         "user",
@@ -57,9 +51,7 @@ export default function Login() {
         })
       );
 
-      console.log("Usuario guardado en localStorage");
       window.location.href = "/dashboard";
-
     } catch (err: any) {
       console.error("ERROR LOGIN WEB3:", err);
       setError("Esta wallet no tiene usuario registrado en Solana");
@@ -69,75 +61,147 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* 🔵 LADO IZQUIERDO */}
-      <div className="hidden md:flex w-1/2 bg-[#0F172A] flex-col items-center justify-between p-10 relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0F172A] to-[#020617]" />
+    <div className="min-h-screen flex overflow-hidden bg-[#07111F]">
 
-        <div className="relative flex flex-col h-full w-full items-center">
-          <div className="text-center mt-10">
-            <h1 className="text-5xl font-bold text-[#00BB77] mb-2">
-              AgroSense-Web3 🌱
+      {/* LADO IZQUIERDO */}
+      <div className="hidden lg:block w-1/2 relative overflow-hidden bg-[#07111F]">
+        <img
+          src="/login-izquierdo.png"
+          alt="AgroSense Web3"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      </div>
+
+      {/* LADO DERECHO */}
+      <div className="relative flex w-full lg:w-1/2 items-center justify-center overflow-hidden bg-white">
+        
+        {/* FONDO DERECHO */}
+        <img
+          src="/login-derecho.png"
+          alt="Fondo AgroSense"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+
+        {/* CARD LOGIN */}
+        <div
+          className="
+            relative z-10
+            w-full max-w-md
+            mx-6
+            bg-white/80
+            backdrop-blur-xl
+            border border-white/70
+            shadow-[0_25px_70px_rgba(0,0,0,0.14)]
+            rounded-[32px]
+            p-10
+          "
+        >
+
+          {/* ICONO */}
+          <div className="flex justify-center mb-6">
+            <div
+              className="
+                w-24 h-24
+                rounded-full
+                bg-[#00BB77]/10
+                border border-[#00BB77]/20
+                flex items-center justify-center
+                shadow-[0_0_30px_rgba(0,187,119,0.16)]
+              "
+            >
+              <span className="text-5xl">🌱</span>
+            </div>
+          </div>
+
+          {/* TITULOS */}
+          <div className="text-center mb-8">
+            <h1 className="text-5xl font-extrabold text-[#00BB77] mb-3 tracking-tight">
+              Bienvenido 🌱
             </h1>
-            <p className="text-gray-400 text-2xl">
-              Plataforma digital para monitoreo y control de riego inteligente
+
+            <h2 className="text-3xl font-bold text-[#0F172A] mb-4">
+              Iniciar sesión Web3
+            </h2>
+
+            <p className="text-gray-500 leading-relaxed text-base">
+              Conecta tu wallet Phantom para acceder a AgroSense.
             </p>
           </div>
 
-          <div className="flex-1 flex items-center justify-center w-full mt-10">
-            <img
-              src="/agro-bg-a.jpg"
-              alt="AgroSense"
-              className="rounded-xl shadow-2xl object-cover max-h-[500px] w-full"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* ⚪ LOGIN WEB3 */}
-      <div className="flex w-full md:w-1/2 items-center justify-center bg-white">
-        <div className="w-full max-w-md p-8">
-          <h1 className="text-4xl font-bold text-[#00BB77] mb-4">
-            Bienvenido 🌱
-          </h1>
-
-          <h2 className="text-2xl font-semibold mb-6 text-gray-800">
-            Iniciar sesión Web3
-          </h2>
-
-          <p className="text-gray-400 mb-6">
-            Conecta tu wallet Phantom para acceder a AgroSense.
-          </p>
-
+          {/* ERROR */}
           {error && (
-            <div className="mb-4 p-2 text-sm text-red-600 bg-red-100 border border-red-300 rounded">
+            <div
+              className="
+                mb-5
+                p-4
+                text-sm
+                text-red-600
+                bg-red-50
+                border border-red-200
+                rounded-2xl
+              "
+            >
               {error}
             </div>
           )}
 
-          <div className="mb-4">
+          {/* WALLET BUTTON */}
+          <div className="mb-5 flex justify-center">
             <ConnectWalletButton />
           </div>
 
+          {/* WALLET */}
           {publicKey && (
-            <p className="text-xs text-gray-500 break-all mb-4 text-center">
-              Wallet conectada: {publicKey.toString()}
-            </p>
+            <div
+              className="
+                mb-6
+                p-4
+                rounded-2xl
+                bg-[#7C3AED]/10
+                border border-[#7C3AED]/20
+              "
+            >
+              <p className="text-xs text-gray-500 text-center mb-2">
+                Wallet conectada
+              </p>
+
+              <p className="text-sm font-medium text-[#4C1D95] break-all text-center">
+                {publicKey.toString()}
+              </p>
+            </div>
           )}
 
+          {/* LOGIN BUTTON */}
           <button
             onClick={handleWeb3Login}
             disabled={loading}
-            className="w-full bg-[#00BB77] hover:bg-[#029e65] text-white py-3 rounded transition mb-4 disabled:opacity-50"
+            className="
+              w-full
+              bg-[#00BB77]
+              hover:bg-[#029e65]
+              text-white
+              py-4
+              rounded-2xl
+              font-bold
+              text-lg
+              transition-all
+              duration-300
+              shadow-[0_10px_30px_rgba(0,187,119,0.35)]
+              hover:scale-[1.02]
+              disabled:opacity-50
+            "
           >
-            {loading ? "Verificando cuenta..." : "Entrar con Solana"}
+            {loading
+              ? "Verificando cuenta..."
+              : "Entrar con Solana →"}
           </button>
 
-          <p className="text-sm text-gray-500 mt-6 text-center">
+          {/* REGISTER */}
+          <p className="text-sm text-gray-500 mt-8 text-center">
             ¿No tienes cuenta?{" "}
             <button
               onClick={() => router.push("/register")}
-              className="text-[#00BB77] hover:underline"
+              className="text-[#00BB77] font-semibold hover:underline"
             >
               Crear cuenta
             </button>
@@ -147,4 +211,3 @@ export default function Login() {
     </div>
   );
 }
-

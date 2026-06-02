@@ -1,28 +1,29 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
 
 export default function ClimaPage() {
-  const pathname = usePathname();
-
   const [clima, setClima] = useState<any>(null);
   const [horaActual, setHoraActual] = useState("");
   const [direccion, setDireccion] = useState("");
+
+  const CIUDAD = "Jilotepec Estado de Mexico";
+
+  /*
+  // 🌍 GOOGLE → Coordenadas
+  // Esta parte queda comentada por si después quieres volver a usar Google Maps.
   const [coords, setCoords] = useState<any>(null);
 
-  const DIRECCION = "Jilotepec Estado de Mexico";
-
-  // 🌍 GOOGLE → Coordenadas
   const obtenerCoordenadas = async () => {
     try {
       const res = await fetch(
         `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-          DIRECCION
+          CIUDAD
         )}&key=${process.env.NEXT_PUBLIC_GOOGLE_API_KEY}`
       );
 
       const data = await res.json();
+      console.log("GOOGLE API:", data);
 
       if (data.results && data.results.length > 0) {
         const location = data.results[0].geometry.location;
@@ -38,39 +39,41 @@ export default function ClimaPage() {
       console.error("Error coordenadas:", error);
     }
   };
+  */
 
-  // 🌦️ CLIMA
-  const obtenerClima = async (lat: number, lon: number) => {
+  // 🌦️ CLIMA SOLO CON WEATHERAPI
+  const obtenerClima = async () => {
     try {
       const res = await fetch(
-        `https://api.weatherapi.com/v1/forecast.json?key=${process.env.NEXT_PUBLIC_WEATHER_API_KEY}&q=${lat},${lon}&days=5&lang=es`
+        `https://api.weatherapi.com/v1/forecast.json?key=${
+          process.env.NEXT_PUBLIC_WEATHER_API_KEY
+        }&q=${encodeURIComponent(CIUDAD)}&days=5&lang=es`
       );
 
       const data = await res.json();
-      setClima(data);
+      console.log("CLIMA API:", data);
+
+      if (data.current) {
+        setClima(data);
+        setDireccion(data.location?.name || CIUDAD);
+      } else {
+        console.error("Error API clima:", data);
+      }
     } catch (error) {
       console.error("Error clima:", error);
     }
   };
 
-  // 🚀 INIT
   useEffect(() => {
-    obtenerCoordenadas();
-  }, []);
+    obtenerClima();
 
-  // 🔁 Clima auto refresh
-  useEffect(() => {
-    if (!coords) return;
-
-    const cargar = () => obtenerClima(coords.lat, coords.lon);
-
-    cargar();
-    const intervalo = setInterval(cargar, 300000);
+    const intervalo = setInterval(() => {
+      obtenerClima();
+    }, 300000);
 
     return () => clearInterval(intervalo);
-  }, [coords]);
+  }, []);
 
-  // ⏱️ RELOJ
   useEffect(() => {
     const intervalo = setInterval(() => {
       const ahora = new Date();
@@ -84,15 +87,14 @@ export default function ClimaPage() {
     return () => clearInterval(intervalo);
   }, []);
 
-  // 🌧️ LLUVIA
   const vaALloverPronto = () => {
-    if (!clima) return false;
+    if (!clima?.forecast?.forecastday?.[0]?.hour) return false;
+
     return clima.forecast.forecastday[0].hour.some(
       (h: any) => h.chance_of_rain > 60
     );
   };
 
-  // 🌱 RECOMENDACIÓN (🔥 NUEVA LÓGICA)
   const recomendacion = () => {
     if (!clima) return "Cargando...";
 
@@ -112,32 +114,24 @@ export default function ClimaPage() {
   return (
     <div className="flex min-h-screen bg-[#F5F7FA]">
       <main className="flex-1 p-4">
-
-        {/* HEADER */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">
-            Clima 🌦️
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-800">Clima 🌦️</h1>
           <p className="text-gray-500">{horaActual}</p>
         </div>
 
         {!clima ? (
-          <p className="text-gray-500 animate-pulse">
-            Cargando clima...
-          </p>
+          <p className="text-gray-500 animate-pulse">Cargando clima...</p>
         ) : (
           <>
-            {/* 🔥 CARDS */}
             <div className="grid md:grid-cols-3 gap-6 mb-8">
-
               <div className="bg-white p-6 rounded-xl shadow">
                 <p className="text-gray-500">Temperatura</p>
                 <h2 className="text-3xl font-bold">
                   {clima.current.temp_c}°C
                 </h2>
                 <p className="text-sm text-gray-400">
-                  Min: {clima.forecast.forecastday[0].day.mintemp_c}° | 
-                  Max: {clima.forecast.forecastday[0].day.maxtemp_c}°
+                  Min: {clima.forecast.forecastday[0].day.mintemp_c}° | Max:{" "}
+                  {clima.forecast.forecastday[0].day.maxtemp_c}°
                 </p>
               </div>
 
@@ -147,7 +141,8 @@ export default function ClimaPage() {
                   {clima.current.humidity}%
                 </h2>
                 <p className="text-sm text-gray-400">
-                  Lluvia: {clima.forecast.forecastday[0].day.daily_chance_of_rain}%
+                  Lluvia:{" "}
+                  {clima.forecast.forecastday[0].day.daily_chance_of_rain}%
                 </p>
               </div>
 
@@ -160,26 +155,20 @@ export default function ClimaPage() {
                   Sensación: {clima.current.feelslike_c}°C
                 </p>
               </div>
-
             </div>
 
-            {/* 📍 UBICACIÓN */}
             <div className="bg-white p-6 rounded-xl shadow mb-8">
               <p className="text-gray-500">Ubicación</p>
               <h2 className="text-xl font-bold">
-                {direccion || "Cargando ubicación..."}
+                {direccion || CIUDAD}
               </h2>
             </div>
 
-            {/* 🌱 RECOMENDACIÓN */}
             <div className="bg-white p-6 rounded-xl shadow mb-8">
               <p className="text-gray-500">Recomendación</p>
-              <h2 className="text-xl font-bold">
-                {recomendacion()}
-              </h2>
+              <h2 className="text-xl font-bold">{recomendacion()}</h2>
             </div>
 
-            {/* ⏱️ HORAS */}
             <h2 className="text-xl font-semibold mb-4">
               Temperatura por horas
             </h2>
@@ -188,7 +177,10 @@ export default function ClimaPage() {
               {clima.forecast.forecastday[0].hour
                 .slice(0, 8)
                 .map((h: any, i: number) => (
-                  <div key={i} className="bg-white p-3 rounded-xl shadow text-center">
+                  <div
+                    key={i}
+                    className="bg-white p-3 rounded-xl shadow text-center"
+                  >
                     <p className="text-xs text-gray-500">
                       {new Date(h.time).toLocaleTimeString("es-MX", {
                         hour: "2-digit",
@@ -203,7 +195,6 @@ export default function ClimaPage() {
                 ))}
             </div>
 
-            {/* 📅 SEMANA */}
             <h2 className="text-xl font-semibold mb-4">
               Pronóstico de la semana
             </h2>
@@ -213,8 +204,10 @@ export default function ClimaPage() {
                 const fecha = new Date(dia.date + "T00:00:00");
 
                 return (
-                  <div key={index} className="bg-white p-4 rounded-xl shadow text-center">
-
+                  <div
+                    key={index}
+                    className="bg-white p-4 rounded-xl shadow text-center"
+                  >
                     <p className="text-sm text-gray-500">
                       {index === 0
                         ? "Hoy"
@@ -224,20 +217,17 @@ export default function ClimaPage() {
                     </p>
 
                     <p className="text-lg font-bold">
-                      {index === 0
-                        ? clima.current.temp_c
-                        : dia.day.avgtemp_c}°C
+                      {index === 0 ? clima.current.temp_c : dia.day.avgtemp_c}
+                      °C
                     </p>
 
                     <p className="text-xs capitalize">
                       {dia.day.condition.text}
                     </p>
-
                   </div>
                 );
               })}
             </div>
-
           </>
         )}
       </main>

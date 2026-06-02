@@ -18,6 +18,28 @@ export default function Sistema() {
 
   const [hora, setHora] = useState("");
 
+  // 🌦️ API CLIMA
+  const [clima, setClima] = useState<any>(null);
+  const CIUDAD = "Jilotepec Estado de Mexico";
+
+  const obtenerClima = async () => {
+    try {
+      const res = await fetch(
+        `https://api.weatherapi.com/v1/current.json?key=${
+          process.env.NEXT_PUBLIC_WEATHER_API_KEY
+        }&q=${encodeURIComponent(CIUDAD)}&lang=es`
+      );
+
+      const data = await res.json();
+
+      if (data.current) {
+        setClima(data);
+      }
+    } catch (error) {
+      console.error("Error clima:", error);
+    }
+  };
+
   // 🔄 Obtener TODO cada 2s (CORREGIDO)
   useEffect(() => {
     const fetchData = async () => {
@@ -55,8 +77,18 @@ export default function Sistema() {
     };
 
     fetchData();
+    obtenerClima();
+
     const interval = setInterval(fetchData, 2000);
-    return () => clearInterval(interval);
+
+    const climaInterval = setInterval(() => {
+      obtenerClima();
+    }, 300000);
+
+    return () => {
+      clearInterval(interval);
+      clearInterval(climaInterval);
+    };
   }, []);
 
   // 📌 Último dato
@@ -123,7 +155,13 @@ export default function Sistema() {
                   <div key={index} className="mb-3 text-lg">
                     🌱 Humedad: {s?.humedad ?? "--"}% <br />
                     🧪 pH: {s?.ph ?? "--"} <br />
-                    🌡️ Temperatura: {s?.temperatura ?? "--"}°C
+
+                    {/* 🌡️ API CLIMA */}
+                    🌡️ Temperatura: {clima?.current?.temp_c ?? "--"}°C
+
+                    {/* 🌡️ SENSOR ESP32 */}
+                    {/* 🌡️ Temperatura: {s?.temperatura ?? "--"}°C */}
+
                   </div>
                 ))
               )}
