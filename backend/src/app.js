@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-//import mongoose from "mongoose";
+// import mongoose from "mongoose";
 import dotenv from "dotenv";
 import http from "http";
 import { Server } from "socket.io";
@@ -10,7 +10,10 @@ import { fileURLToPath } from "url";
 
 import authRoutes from "./routes/authRoutes.js";
 import riegoRoutes from "./routes/riegoRoutes.js";
+import historialRoutes from "./routes/historialRoutes.js";
+
 import { setIO } from "./socket.js";
+import { pool } from "./db/postgresClient.js";
 
 import {
   getEstado,
@@ -18,11 +21,32 @@ import {
   getDecision,
 } from "./services/estadoService.js";
 
-// 🔥 FIX ES MODULES
+// ======================================================
+// BACKEND PRINCIPAL - AGROSENSE
+// ======================================================
+//
+// Función:
+//
+// - Levantar servidor Express.
+// - Configurar rutas REST.
+// - Inicializar Socket.IO.
+// - Enviar datos en tiempo real al frontend.
+// - Conectarse a PostgreSQL.
+// - Coordinar Dashboard, Gestión, Sistema y Analítica.
+//
+// ======================================================
+
+// ======================================================
+// CONFIGURACIÓN DE ES MODULES
+// ======================================================
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// 🔥 CARGA DEL .ENV
+// ======================================================
+// CARGA DE VARIABLES DE ENTORNO
+// ======================================================
+
 dotenv.config({
   path: path.join(__dirname, "../.env"),
 });
@@ -32,7 +56,15 @@ const server = http.createServer(app);
 
 const PORT = 3001;
 
-// 🔥 SOCKET.IO
+// ======================================================
+// CONFIGURACIÓN SOCKET.IO
+// ======================================================
+//
+// Socket.IO permite actualizar el frontend en tiempo real
+// sin necesidad de recargar la página.
+//
+// ======================================================
+
 const io = new Server(server, {
   cors: {
     origin: "http://localhost:3000",
@@ -42,13 +74,10 @@ const io = new Server(server, {
 
 setIO(io);
 
-// 🔥 CONEXIÓN MONGO
-//mongoose
-//  .connect(process.env.MONGO_URI)
-//  .then(() => console.log("✅ MongoDB conectado"))
-//  .catch((err) => console.log("❌ Error Mongo:", err));
+// ======================================================
+// MIDDLEWARES
+// ======================================================
 
-// 🔥 MIDDLEWARES
 app.use(
   cors({
     origin: "http://localhost:3000",
@@ -57,14 +86,34 @@ app.use(
 );
 
 app.use(express.json());
-
 app.use(cookieParser());
 
-// 🔥 ROUTES
+// ======================================================
+// RUTAS REST
+// ======================================================
+//
+// /api/auth      → autenticación
+// /api/riego     → sensores, control manual y automático
+// /api/historial → historial de eventos
+//
+// ======================================================
+
 app.use("/api/auth", authRoutes);
 app.use("/api/riego", riegoRoutes);
+app.use("/api/historial", historialRoutes);
 
-// 🔌 SOCKETS
+// ======================================================
+// EVENTOS SOCKET.IO
+// ======================================================
+//
+// Al conectarse un cliente, se envía:
+//
+// - Estado general
+// - Último dato del sensor
+// - Estado actual de bomba/riego
+//
+// ======================================================
+
 io.on("connection", (socket) => {
   console.log("🟢 Cliente conectado");
 
@@ -81,8 +130,29 @@ io.on("connection", (socket) => {
   });
 });
 
-// 🚀 START SERVER
-server.listen(PORT, "0.0.0.0", () => {
-  console.log(`🔥 Backend corriendo en ${PORT}`);
-});
+// ======================================================
+// INICIO DEL SERVIDOR
+// ======================================================
+//
+// Antes de levantar Express, se verifica conexión
+// con PostgreSQL.
+//
+// ======================================================
+
+const iniciarServidor = async () => {
+  try {
+    await pool.query("SELECT NOW()");
+
+    console.log("🐘 PostgreSQL conectado desde Backend");
+
+    server.listen(PORT, "0.0.0.0", () => {
+      console.log(`🔥 Backend corriendo en ${PORT}`);
+    });
+  } catch (error) {
+    console.error("❌ Error PostgreSQL:", error);
+    process.exit(1);
+  }
+};
+
+iniciarServidor();
 

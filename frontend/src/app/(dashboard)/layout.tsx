@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { io } from "socket.io-client";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -79,6 +80,62 @@ export default function DashboardLayout({
 
     return () => {
       window.removeEventListener("agrosense-notificacion", recibirNotificacion);
+    };
+  }, []);
+
+  useEffect(() => {
+    const socket = io("http://localhost:4000", {
+      transports: ["websocket"],
+    });
+
+    const procesarNotificacion = (evento: any) => {
+      console.log("🔔 Notificación recibida desde microservicio:", evento);
+
+      const prioridad = evento?.prioridad || "informativa";
+      const bomba = evento?.bomba;
+      const razon = evento?.razon || "Nueva actividad del sistema";
+      const zona = evento?.zona || "Zona no especificada";
+      const humedad = evento?.humedad ?? "N/A";
+
+      let tipo = "success";
+      let titulo = "Nueva notificación";
+
+      if (prioridad === "critica") {
+        tipo = "error";
+        titulo = "Alerta crítica de riego";
+      } else if (prioridad === "media") {
+        tipo = "warning";
+        titulo = "Advertencia del sistema";
+      }
+
+      const mensaje = `${razon} | ${zona} | Humedad: ${humedad}% | Bomba: ${
+        bomba ? "Encendida" : "Apagada"
+      }`;
+
+      agregarNotificacion(titulo, mensaje, tipo);
+    };
+
+    socket.on("connect", () => {
+      console.log("🟢 Frontend conectado a notificaciones:", socket.id);
+    });
+
+    socket.onAny((nombreEvento, data) => {
+      console.log("📡 Evento recibido:", nombreEvento, data);
+
+      if (nombreEvento === "alerta-agricola") {
+        procesarNotificacion(data);
+      }
+    });
+
+    //socket.on("notificacion", procesarNotificacion);
+    //socket.on("dashboard", procesarNotificacion);
+
+    socket.on("disconnect", () => {
+      console.log("🔴 Frontend desconectado de notificaciones");
+    });
+
+    return () => {
+      socket.disconnect();
     };
   }, []);
 
@@ -176,6 +233,7 @@ export default function DashboardLayout({
       setToastGlobal(null);
     }, 4000);
   };
+
 
   const borrarNotificacion = (id: number) => {
     setNotificaciones((prev) => prev.filter((item) => item.id !== id));
@@ -297,11 +355,20 @@ export default function DashboardLayout({
       {toastGlobal && (
         <div
           className={`fixed top-6 right-6 z-[99999] text-white px-5 py-3 rounded-xl shadow-lg flex items-center gap-4 ${
-            toastGlobal.tipo === "error" ? "bg-red-500" : "bg-[#22C55E]"
+            toastGlobal.tipo === "error"
+              ? "bg-red-500"
+              : toastGlobal.tipo === "warning"
+              ? "bg-yellow-500"
+              : "bg-[#22C55E]"
           }`}
         >
           <span>
-            {toastGlobal.tipo === "error" ? "❌" : "✅"} {toastGlobal.mensaje}
+            {toastGlobal.tipo === "error"
+              ? "❌"
+              : toastGlobal.tipo === "warning"
+              ? "⚠️"
+              : "✅"}{" "}
+            {toastGlobal.mensaje}
           </span>
 
           <button onClick={() => setToastGlobal(null)} className="font-bold">
@@ -385,6 +452,7 @@ export default function DashboardLayout({
                 { name: "Gestión", path: "/gestion" },
                 { name: "Sistema", path: "/sistema" },
                 { name: "Perfil", path: "/perfil" },
+                { name: "Historial", path: "/historial" },
               ].map((item) => (
                 <Link key={item.path} href={item.path}>
                   <button
@@ -470,6 +538,8 @@ export default function DashboardLayout({
                             className={`relative p-3 rounded-xl border ${
                               item.tipo === "error"
                                 ? "bg-red-500/10 border-red-500/20"
+                                : item.tipo === "warning"
+                                ? "bg-yellow-500/10 border-yellow-500/20"
                                 : "bg-[#1E293B] border-[#22C55E]/20"
                             }`}
                           >
@@ -493,10 +563,16 @@ export default function DashboardLayout({
                               className={`font-semibold text-sm pr-5 ${
                                 item.tipo === "error"
                                   ? "text-red-400"
+                                  : item.tipo === "warning"
+                                  ? "text-yellow-400"
                                   : "text-[#22C55E]"
                               }`}
                             >
-                              {item.tipo === "error" ? "❌" : "✅"}{" "}
+                              {item.tipo === "error"
+                                ? "❌"
+                                : item.tipo === "warning"
+                                ? "⚠️"
+                                : "✅"}{" "}
                               {item.titulo}
                             </p>
 

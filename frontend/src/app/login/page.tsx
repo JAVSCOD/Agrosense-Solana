@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 
 import {
   getProgram,
@@ -15,7 +16,7 @@ const ConnectWalletButton = dynamic(
   { ssr: false }
 );
 
-export default function Login() {
+function Home() {
   const router = useRouter();
   const wallet = useWallet();
   const { publicKey, connected } = wallet;
@@ -51,39 +52,196 @@ export default function Login() {
         })
       );
 
-      window.location.href = "/dashboard";
+      router.push("/dashboard");
+
     } catch (err: any) {
       console.error("ERROR LOGIN WEB3:", err);
-      setError("Esta wallet no tiene usuario registrado en Solana");
+
+      setError(
+        "Esta wallet no tiene usuario registrado en Solana"
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  const features = [
+    {
+      title: "Sensores IoT",
+      text: "Monitoreo de humedad, temperatura y pH mediante sensores conectados al ESP32.",
+      img: "/images/iot-sensores.png",
+    },
+    {
+      title: "Dashboard en tiempo real",
+      text: "Visualización dinámica de datos agrícolas, gráficas, estados y métricas del cultivo.",
+      img: "/images/dashboard.png",
+    },
+    {
+      title: "Riego automatizado",
+      text: "Control manual y automático del sistema de riego según las condiciones del suelo.",
+      img: "/images/riego.png",
+    },
+    {
+      title: "Solana / Web3",
+      text: "Integración con blockchain para fortalecer la trazabilidad y el enfoque descentralizado.",
+      img: "/images/solana.png",
+    },
+    {
+      title: "Alertas inteligentes",
+      text: "Notificaciones cuando los sensores detectan valores críticos o eventos importantes.",
+      img: "/images/alertas.png",
+    },
+    {
+      title: "Docker y despliegue",
+      text: "Arquitectura lista para ejecutarse con contenedores, backend, frontend y base de datos.",
+      img: "/images/docker.png",
+    },
+  ];
+
+  const architecture = [
+    {
+      name: "ESP32",
+      img: "/images/esp-32-2.png",
+    },
+    {
+      name: "Backend Node.js",
+      img: "/images/node-2.png",
+    },
+    {
+      name: "MongoDB",
+      img: "/images/mongo-2.png",
+    },
+    {
+      name: "Solana",
+      img: "/images/solana-log-2.png",
+    },
+    {
+      name: "Frontend Next.js",
+      img: "/images/next-2.png",
+    },
+  ];
+
   return (
-    <div className="min-h-screen flex overflow-hidden bg-[#07111F]">
+    <main className="min-h-screen bg-[#07111F] text-white overflow-hidden">
 
-      {/* LADO IZQUIERDO */}
-      <div className="hidden lg:block w-1/2 relative overflow-hidden bg-[#07111F]">
-        <img
-          src="/login-izquierdo.png"
-          alt="AgroSense Web3"
+      {/* NAVBAR */}
+      <header className="fixed top-0 left-0 w-full z-50 bg-[#07111F]/80 backdrop-blur-xl border-b border-white/10">
+        <div className="px-6 md:px-14 py-5 flex justify-between items-center">
+
+          <div className="flex items-center gap-2">
+            <span className="text-3xl">🌱</span>
+
+            <h2 className="text-xl font-bold text-[#00BB77]">
+              AgroSense-Web3
+            </h2>
+          </div>
+
+          <nav className="hidden md:flex gap-8 text-sm text-gray-300">
+            <a
+              href="#inicio"
+              className="hover:text-[#00BB77] transition"
+            >
+              Inicio
+            </a>
+
+            <a
+              href="#conceptos"
+              className="hover:text-[#00BB77] transition"
+            >
+              Conceptos
+            </a>
+
+            <a
+              href="#arquitectura"
+              className="hover:text-[#00BB77] transition"
+            >
+              Arquitectura
+            </a>
+
+            <a
+              href="#tecnologias"
+              className="hover:text-[#00BB77] transition"
+            >
+              Tecnologías
+            </a>
+          </nav>
+
+          <Link
+            href="/login"
+            className="bg-[#00BB77] hover:bg-[#009966] px-5 py-2 rounded-xl font-semibold transition"
+          >
+            Iniciar Sesión
+          </Link>
+
+        </div>
+      </header>
+
+      {/* HERO */}
+      <section
+        id="inicio"
+        className="relative min-h-screen flex items-center overflow-hidden"
+      >
+
+        {/* VIDEO */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
           className="absolute inset-0 w-full h-full object-cover"
-        />
-      </div>
+        >
+          <source
+            src="/videos/agrosense-hero.mp4"
+            type="video/mp4"
+          />
+        </video>
 
-      {/* LADO DERECHO */}
-      <div className="relative flex w-full lg:w-1/2 items-center justify-center overflow-hidden bg-white">
-        
-        {/* FONDO DERECHO */}
-        <img
-          src="/login-derecho.png"
-          alt="Fondo AgroSense"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
+        {/* OVERLAY */}
+        <div className="absolute inset-0 bg-[#07111F]/75 backdrop-blur-[2px]" />
 
-        {/* CARD LOGIN */}
-        <div
+        {/* GLOW */}
+        <div className="absolute w-[500px] h-[500px] bg-[#00BB77]/20 rounded-full blur-3xl top-10 left-10" />
+
+        {/* CONTENIDO */}
+        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-14 w-full">
+
+          <div className="max-w-3xl">
+
+            <span className="inline-block mb-5 px-4 py-2 rounded-full bg-[#00BB77]/10 text-[#00BB77] border border-[#00BB77]/30 text-sm">
+              IoT + Web3 + Agricultura inteligente
+            </span>
+
+            <h1 className="text-5xl md:text-7xl font-extrabold leading-tight mb-6">
+              Agricultura inteligente en
+              <span className="text-[#00BB77]">
+                {" "}tiempo real
+              </span>
+            </h1>
+
+            <p className="text-lg md:text-xl text-gray-300 mb-10 max-w-2xl">
+              Monitorea sensores agrícolas, automatiza sistemas
+              de riego y visualiza datos en tiempo real mediante
+              IoT y Web3.
+            </p>
+
+            {/* STATUS */}
+            <div className="flex flex-wrap gap-3">
+
+              <span className="bg-green-500/10 border border-green-500/30 px-4 py-2 rounded-full text-sm text-green-400">
+                🟢 Sistema online
+              </span>
+
+              <span className="bg-cyan-500/10 border border-cyan-500/30 px-4 py-2 rounded-full text-sm text-cyan-400">
+                📡 ESP32 conectado
+              </span>
+
+              <span className="bg-purple-500/10 border border-purple-500/30 px-4 py-2 rounded-full text-sm text-purple-400">
+                ⛓ Solana activa
+              </span>
+
+            </div>
+
+            <div
           className="
             relative z-10
             w-full max-w-md
@@ -99,6 +257,7 @@ export default function Login() {
 
           {/* ICONO */}
           <div className="flex justify-center mb-6">
+
             <div
               className="
                 w-24 h-24
@@ -111,10 +270,12 @@ export default function Login() {
             >
               <span className="text-5xl">🌱</span>
             </div>
+
           </div>
 
           {/* TITULOS */}
           <div className="text-center mb-8">
+
             <h1 className="text-5xl font-extrabold text-[#00BB77] mb-3 tracking-tight">
               Bienvenido 🌱
             </h1>
@@ -126,6 +287,7 @@ export default function Login() {
             <p className="text-gray-500 leading-relaxed text-base">
               Conecta tu wallet Phantom para acceder a AgroSense.
             </p>
+
           </div>
 
           {/* ERROR */}
@@ -145,7 +307,7 @@ export default function Login() {
             </div>
           )}
 
-          {/* WALLET BUTTON */}
+          {/* BOTON WALLET */}
           <div className="mb-5 flex justify-center">
             <ConnectWalletButton />
           </div>
@@ -161,6 +323,7 @@ export default function Login() {
                 border border-[#7C3AED]/20
               "
             >
+
               <p className="text-xs text-gray-500 text-center mb-2">
                 Wallet conectada
               </p>
@@ -168,10 +331,11 @@ export default function Login() {
               <p className="text-sm font-medium text-[#4C1D95] break-all text-center">
                 {publicKey.toString()}
               </p>
+
             </div>
           )}
 
-          {/* LOGIN BUTTON */}
+          {/* LOGIN */}
           <button
             onClick={handleWeb3Login}
             disabled={loading}
@@ -198,16 +362,36 @@ export default function Login() {
 
           {/* REGISTER */}
           <p className="text-sm text-gray-500 mt-8 text-center">
+
             ¿No tienes cuenta?{" "}
+
             <button
               onClick={() => router.push("/register")}
               className="text-[#00BB77] font-semibold hover:underline"
             >
               Crear cuenta
             </button>
+
           </p>
+
         </div>
-      </div>
-    </div>
+
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      {/* FOOTER */}
+      <footer className="border-t border-white/10 px-8 py-6 text-center text-gray-500 text-sm">
+        © 2026 AgroSense-Web3. Proyecto IoT agrícola con Solana.
+      </footer>
+
+    </main>
   );
 }
+
+export default Home;
+

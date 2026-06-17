@@ -11,25 +11,40 @@ import {
 
 const router = express.Router();
 
-// 📡 ESP32 manda datos
+// ==========================================
+// RECEPCIÓN DE DATOS DESDE ESP32
+// ==========================================
 router.post("/sensores", recibirSensorData);
 
-// 🤖 ESP32 consulta decisión
+// ==========================================
+// CONSULTA DE DECISIÓN DE RIEGO
+// ==========================================
 router.get("/control", obtenerControl);
 
-// 📊 estado del sistema
+// ==========================================
+// ESTADO GLOBAL DE TODAS LAS ZONAS
+// ==========================================
 router.get("/estado", obtenerEstado);
 
-// 📊 último dato sensores
+// ==========================================
+// ÚLTIMA LECTURA DE SENSORES
+// ==========================================
 router.get("/sensores", obtenerSensores);
 
-// 🧾 historial
+// ==========================================
+// HISTORIAL DE EVENTOS DE RIEGO
+// ==========================================
 router.get("/historial", obtenerHistorial);
 
-// 🔁 cambiar modo
+// ==========================================
+// CAMBIO DE MODO AUTOMÁTICO
+// ==========================================
 router.post("/modo", cambiarModo);
 
-// 🕹️ control manual
+// ==========================================
+// ACTIVACIÓN MANUAL DE BOMBA
+// ==========================================
 router.post("/manual", controlManual);
 
 export default router;
+

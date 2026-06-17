@@ -9,14 +9,19 @@ import {
 
 import { getIO } from "../socket.js";
 
-// 📡 ESP32 manda datos
+// ==========================================
+// ESP32 ENVÍA DATOS
+// ==========================================
+
 export const recibirSensorData = (req, res) => {
+
   const data = req.body;
 
   if (
     !data ||
     typeof data.humedad !== "number" ||
-    typeof data.ph !== "number"
+    typeof data.ph !== "number" ||
+    typeof data.temperatura !== "number"
   ) {
     return res.status(400).json({
       ok: false,
@@ -24,12 +29,16 @@ export const recibirSensorData = (req, res) => {
     });
   }
 
+  const zona = data.zona || "Zona 1";
+
   setSensorData(data);
+
   global.ultimaConexion = Date.now();
 
-  console.log("📡 Sensor:", data);
+  console.log(`📡 Sensor ${zona}:`, data);
 
   let io;
+
   try {
     io = getIO();
   } catch (e) {
@@ -37,26 +46,40 @@ export const recibirSensorData = (req, res) => {
   }
 
   if (io) {
-    io.emit("sensor", data);
 
-    // 🔥 recalcular SIEMPRE después de sensor
-    const decision = getDecision();
+    io.emit("sensor", {
+      zona,
+      data,
+    });
+
+    const decision = getDecision(zona);
+
     io.emit("bomba", decision);
 
-    // 🔥 mantener frontend sincronizado
     io.emit("estado", getEstado());
   }
 
-  res.json({ ok: true });
+  res.json({
+    ok: true,
+    zona,
+  });
+
 };
 
-// 🤖 ESP32 consulta decisión
-export const obtenerControl = (req, res) => {
-  const decision = getDecision();
+// ==========================================
+// ESP32 CONSULTA DECISIÓN
+// ==========================================
 
-  console.log("🤖 Decision:", decision);
+export const obtenerControl = (req, res) => {
+
+  const zona = req.query.zona || "Zona 1";
+
+  const decision = getDecision(zona);
+
+  console.log(`🤖 Decision ${zona}:`, decision);
 
   let io;
+
   try {
     io = getIO();
   } catch (e) {}
@@ -66,48 +89,87 @@ export const obtenerControl = (req, res) => {
   }
 
   res.json(decision);
+
 };
 
-// 📊 FRONTEND obtiene estado
+// ==========================================
+// ESTADO GENERAL
+// ==========================================
+
 export const obtenerEstado = (req, res) => {
-  res.json(getEstado());
-};
 
-// 🔁 FRONTEND cambia modo (AUTO / ZONA)
-export const cambiarModo = (req, res) => {
-  const { riego, automatico, zona } = req.body;
-
-  // 🔥 UNA SOLA ACTUALIZACIÓN (CLAVE)
-  const estado = actualizarEstado({
-    riego,
-    automatico: riego === true ? false : automatico,
-    zona,
+  res.json({
+    ok: true,
+    data: getEstado(),
   });
 
-  console.log("🔁 Estado:", estado);
+};
+
+// ==========================================
+// CAMBIAR AUTOMÁTICO
+// ==========================================
+
+export const cambiarModo = (req, res) => {
+
+  const {
+    zona,
+    automatico,
+  } = req.body;
+
+  if (!zona) {
+    return res.status(400).json({
+      ok: false,
+      error: "Zona requerida",
+    });
+  }
+
+  const estado = actualizarEstado({
+    zona,
+    automatico,
+  });
+
+  console.log(`🤖 Automático ${zona}:`, estado);
 
   let io;
+
   try {
     io = getIO();
   } catch (e) {}
 
   if (io) {
-    io.emit("estado", estado);
 
-    // 🔥 recalcular bomba
-    const decision = getDecision();
+    io.emit("estado", getEstado());
+
+    const decision = getDecision(zona);
+
     io.emit("bomba", decision);
+
   }
 
   res.json({
     ok: true,
     estado,
   });
+
 };
 
-// 🕹️ CONTROL MANUAL
+// ==========================================
+// CONTROL MANUAL
+// ==========================================
+
 export const controlManual = (req, res) => {
-  const { encender } = req.body;
+
+  const {
+    zona,
+    encender,
+  } = req.body;
+
+  if (!zona) {
+    return res.status(400).json({
+      ok: false,
+      error: "Zona requerida",
+    });
+  }
 
   if (typeof encender !== "boolean") {
     return res.status(400).json({
@@ -116,46 +178,63 @@ export const controlManual = (req, res) => {
     });
   }
 
-  // 🔥 MANUAL DESACTIVA AUTOMÁTICO
   const estado = actualizarEstado({
-    riego: encender,
+    zona,
+    manual: encender,
     automatico: false,
   });
 
-  console.log("🕹️ Manual:", estado);
+  console.log(`🕹️ Manual ${zona}:`, estado);
 
   let io;
+
   try {
     io = getIO();
   } catch (e) {}
 
   if (io) {
-    io.emit("estado", estado);
 
-    // 🔥 recalcular bomba
-    const decision = getDecision();
+    io.emit("estado", getEstado());
+
+    const decision = getDecision(zona);
+
     io.emit("bomba", decision);
+
   }
 
   res.json({
     ok: true,
     estado,
   });
+
 };
 
-// 📊 ÚLTIMO SENSOR
+// ==========================================
+// ÚLTIMO SENSOR POR ZONA
+// ==========================================
+
 export const obtenerSensores = (req, res) => {
+
+  const zona = req.query.zona || "Zona 1";
+
   res.json({
     ok: true,
-    data: getUltimoDato(),
+    zona,
+    data: getUltimoDato(zona),
   });
+
 };
 
-// 🧾 HISTORIAL
+// ==========================================
+// HISTORIAL
+// ==========================================
+
 export const obtenerHistorial = (req, res) => {
+
   res.json({
     ok: true,
     data: getHistorial(),
   });
+
 };
 

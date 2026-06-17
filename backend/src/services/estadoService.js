@@ -1,134 +1,347 @@
 import { getIO } from "../socket.js";
 
-let estado = {
-  riego: false,
-  automatico: false,
-  zona: "Zona 1",
-};
+// ==========================================
+// ESTADO GLOBAL MULTI-ZONA
+// ==========================================
 
-let ultimoDato = null;
+const zonas = {};
+
 let historial = [];
-let bombaActual = false;
 
-// 📡 guardar datos del sensor
-export const setSensorData = (data) => {
-  ultimoDato = data;
+// ==========================================
+// OBTENER / CREAR ZONA
+// ==========================================
+
+const obtenerZona = (zona = "Zona 1") => {
+
+  if (!zonas[zona]) {
+
+    zonas[zona] = {
+
+      manual: false,
+      automatico: true,
+
+      bomba: false,
+
+      riegoActivo: false,
+      inicioRiego: null,
+
+      sensor: null,
+
+    };
+
+    console.log(`📍 Nueva zona registrada: ${zona}`);
+
+  }
+
+  return zonas[zona];
+
 };
 
-// 📊 obtener último dato
-export const getUltimoDato = () => ultimoDato;
+// ==========================================
+// SENSOR
+// ==========================================
 
-// 📊 estado actual
-export const getEstado = () => estado;
+export const setSensorData = (data) => {
 
-// 🧾 HISTORIAL
+  const zona = data.zona || "Zona 1";
+
+  const zonaData = obtenerZona(zona);
+
+  zonaData.sensor = data;
+
+};
+
+// ==========================================
+// ÚLTIMO SENSOR
+// ==========================================
+
+export const getUltimoDato = (zona = "Zona 1") => {
+
+  return obtenerZona(zona).sensor;
+
+};
+
+// ==========================================
+// ESTADO GENERAL
+// ==========================================
+
+export const getEstado = () => {
+
+  return zonas;
+
+};
+
+// ==========================================
+// HISTORIAL
+// ==========================================
+
 export const agregarHistorial = (evento) => {
-  const nuevo = {
+
+  const nuevoEvento = {
     ...evento,
     hora: new Date().toLocaleTimeString(),
   };
 
-  historial.push(nuevo);
+  historial.push(nuevoEvento);
 
-  if (historial.length > 20) {
+  if (historial.length > 100) {
     historial.shift();
   }
 
   try {
     getIO().emit("historial", historial);
-  } catch (e) {}
+  } catch {}
+
 };
 
 export const getHistorial = () => historial;
 
-// 🔁 ACTUALIZAR ESTADO
-export const actualizarEstado = ({ riego, automatico, zona }) => {
+// ==========================================
+// ACTUALIZAR ESTADO
+// ==========================================
 
-  // 🔥 MANUAL
-  if (typeof riego === "boolean" && riego !== estado.riego) {
-    estado.riego = riego;
+export const actualizarEstado = ({
+  zona = "Zona 1",
+  manual,
+  automatico,
+}) => {
+
+  const zonaData = obtenerZona(zona);
+
+  // ===========================
+  // MANUAL
+  // ===========================
+
+  if (
+    typeof manual === "boolean" &&
+    manual !== zonaData.manual
+  ) {
+
+    zonaData.manual = manual;
 
     agregarHistorial({
       tipo: "manual",
-      evento: riego ? "Riego encendido" : "Riego apagado",
+      zona,
+      evento: manual
+        ? "🕹️ Manual activado"
+        : "🕹️ Manual desactivado",
     });
+
   }
 
-  // 🔥 AUTOMÁTICO
-  if (typeof automatico === "boolean" && automatico !== estado.automatico) {
-    estado.automatico = automatico;
+  // ===========================
+  // AUTOMÁTICO
+  // ===========================
 
-    agregarHistorial({
-      tipo: "automatico",
-      evento: automatico
-        ? "Modo automático activado"
-        : "Modo automático desactivado",
-    });
+  if (
+    typeof automatico === "boolean" &&
+    automatico !== zonaData.automatico
+  ) {
+
+    zonaData.automatico = automatico;
+
   }
 
-  // 📍 ZONA
-  if (zona && zona !== estado.zona) {
-    estado.zona = zona;
+  return zonaData;
 
-    agregarHistorial({
-      tipo: "zona",
-      evento: `Cambio a ${zona}`,
-    });
-  }
-
-  return estado;
 };
 
-// 🧠 DECISIÓN FINAL (VERSIÓN PRO)
-export const getDecision = () => {
+// ==========================================
+// DECISIÓN DE RIEGO
+// ==========================================
 
-  let nuevaBomba = false;
+export const getDecision = (zona = "Zona 1") => {
 
-  const humedad = parseFloat(ultimoDato?.humedad);
-  const ph = parseFloat(ultimoDato?.ph);
+  const zonaData = obtenerZona(zona);
 
-  // 🚫 SIN DATOS O DATOS INVÁLIDOS
-  if (!ultimoDato || isNaN(humedad) || isNaN(ph)) {
-    nuevaBomba = false;
+  const sensor = zonaData.sensor;
+
+  if (!sensor) {
+
+    return {
+      zona,
+      bomba: false,
+      manual: zonaData.manual,
+      automatico: zonaData.automatico,
+      riegoActivo: zonaData.riegoActivo,
+      razon: "Sin datos",
+    };
+
   }
 
-  // 🚫 BLOQUEO PH
-  else if (ph < 1 || ph > 8) {
-    nuevaBomba = false;
-  }
+  const humedad = Number(sensor.humedad);
+  const ph = Number(sensor.ph);
+  const temperatura = Number(sensor.temperatura ?? 0);
 
-  // 🔧 MANUAL
-  else if (estado.riego === true) {
+  let nuevaBomba = zonaData.bomba;
+  let razon = "Condiciones normales";
+
+  // ======================================
+  // MODO MANUAL
+  // ======================================
+
+  if (zonaData.manual) {
+
+    zonaData.riegoActivo = false;
+    zonaData.inicioRiego = null;
+
     nuevaBomba = true;
+
+    razon = "Control manual";
+
   }
 
-  // 🛑 TODO APAGADO
-  else if (!estado.automatico) {
+  // ======================================
+  // AUTOMÁTICO DESACTIVADO
+  // ======================================
+
+  else if (!zonaData.automatico) {
+
+    zonaData.riegoActivo = false;
+    zonaData.inicioRiego = null;
+
     nuevaBomba = false;
+
+    razon = "Modo automático desactivado";
+
   }
 
-  // 🤖 AUTOMÁTICO
+  // ======================================
+  // PH FUERA DE RANGO
+  // ======================================
+
+  else if (ph < 6 || ph > 8) {
+
+    zonaData.riegoActivo = false;
+    zonaData.inicioRiego = null;
+
+    nuevaBomba = false;
+
+    razon = "pH fuera de rango";
+
+  }
+
+  // ======================================
+  // RIEGO YA INICIADO
+  // ======================================
+
+  else if (zonaData.riegoActivo) {
+
+    nuevaBomba = true;
+
+    razon = "Riego automático en curso";
+
+    if (humedad >= 85) {
+
+      const duracionSegundos = Math.floor(
+        (Date.now() - zonaData.inicioRiego) / 1000
+      );
+
+      zonaData.riegoActivo = false;
+      zonaData.inicioRiego = null;
+
+      nuevaBomba = false;
+
+      razon = "Humedad recuperada";
+
+      agregarHistorial({
+        tipo: "riego",
+        zona,
+        evento: `🛑 Riego finalizado (${duracionSegundos}s)`,
+      });
+
+    }
+
+  }
+
+  // ======================================
+  // INICIAR NUEVO RIEGO
+  // ======================================
+
+  else if (humedad < 30) {
+
+    zonaData.riegoActivo = true;
+    zonaData.inicioRiego = Date.now();
+
+    nuevaBomba = true;
+
+    razon = "Riego automático iniciado";
+
+    agregarHistorial({
+      tipo: "riego",
+      zona,
+      evento: "💧 Riego automático iniciado",
+    });
+
+  }
+
+  // ======================================
+  // CONDICIONES NORMALES
+  // ======================================
+
   else {
-    if (humedad < 30) nuevaBomba = true;
-    else if (humedad > 85) nuevaBomba = false;
+
+    nuevaBomba = false;
+
+    razon = "Condiciones normales";
+
   }
 
-  // 🔁 CAMBIO REAL
-  if (nuevaBomba !== bombaActual) {
-    bombaActual = nuevaBomba;
+  // ======================================
+  // ACTUALIZAR BOMBA
+  // ======================================
+
+  if (nuevaBomba !== zonaData.bomba) {
+
+    zonaData.bomba = nuevaBomba;
 
     agregarHistorial({
       tipo: "bomba",
+      zona,
       evento: nuevaBomba
         ? "💧 Bomba ENCENDIDA"
         : "🛑 Bomba APAGADA",
     });
 
-    try {
-      getIO().emit("bomba", { bomba: nuevaBomba });
-    } catch (e) {}
   }
 
-  return { bomba: nuevaBomba };
+  try {
+    getIO().emit("bomba", {
+      zona,
+      bomba: zonaData.bomba,
+      manual: zonaData.manual,
+      automatico: zonaData.automatico,
+      riegoActivo: zonaData.riegoActivo,
+      humedad,
+      ph,
+      temperatura,
+      razon,
+    });
+
+  } catch {}
+
+  return {
+
+    zona,
+
+    bomba: zonaData.bomba,
+
+    manual: zonaData.manual,
+
+    automatico: zonaData.automatico,
+
+    riegoActivo: zonaData.riegoActivo,
+
+    humedad,
+
+    ph,
+
+    temperatura,
+
+    razon,
+
+  };
+
 };
 

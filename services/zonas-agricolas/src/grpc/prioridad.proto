@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package prioridad;
+
+// ======================================================
+// Servicio de evaluación de prioridad agrícola
+// ======================================================
+//
+// Recibe datos de sensores y devuelve:
+//
+// - Nivel de prioridad
+// - Acción tomada
+// - Estado de la bomba
+// - Sensor que originó la alerta
+// - Detalle completo de la evaluación
+//
+// ======================================================
+
+service PrioridadService {
+
+  rpc EvaluarPrioridad (SensorRequest)
+  returns (PrioridadResponse);
+
+}
+
+// ======================================================
+// Datos enviados hacia prioridad-riego
+// ======================================================
+
+message SensorRequest {
+
+  // Identificador del dispositivo
+  string deviceId = 1;
+
+  // Humedad del suelo (%)
+  float humedad = 2;
+
+  // Nivel de pH
+  float ph = 3;
+
+  // Temperatura ambiente (°C)
+  float temperatura = 4;
+
+  // Zona agrícola
+  string zona = 5;
+
+}
+
+// ======================================================
+// Respuesta generada por prioridad-riego
+// ======================================================
+
+message PrioridadResponse {
+
+  // Nivel general calculado
+  // critica | alta | media | estable
+  string prioridad = 1;
+
+  // Estado final de la bomba
+  bool bomba = 2;
+
+  // Motivo principal de la decisión
+  string razon = 3;
+
+  // Acción ejecutada por el sistema
+  string accion = 4;
+
+  // Sensor responsable de la prioridad
+  string sensorOrigen = 5;
+
+  // Detalle completo de evaluación
+  string detalle = 6;
+
+}
+
